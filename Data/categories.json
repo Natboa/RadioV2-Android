@@ -1,0 +1,202 @@
+[
+  {
+    "id": 1,
+    "name": "Rock & Metal",
+    "displayOrder": 0,
+    "groups": [
+      { "id": 178, "name": "Alternative Rock" },
+      { "id": 799, "name": "Classic Rock" },
+      { "id": 1596, "name": "Gothic" },
+      { "id": 1706, "name": "Hard Rock" },
+      { "id": 1737, "name": "Heavy Metal" },
+      { "id": 2879, "name": "Metal" },
+      { "id": 3183, "name": "New Wave" },
+      { "id": 3585, "name": "Progressive Rock" },
+      { "id": 3625, "name": "Punk" },
+      { "id": 3801, "name": "Rock" },
+      { "id": 4104, "name": "Soft Rock" }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Electronic & Dance",
+    "displayOrder": 1,
+    "groups": [
+      { "id": 187, "name": "Ambient" },
+      { "id": 808, "name": "Club" },
+      { "id": 970, "name": "Dance" },
+      { "id": 1138, "name": "Drum And Bass" },
+      { "id": 1212, "name": "Electronic" },
+      { "id": 1822, "name": "House" },
+      { "id": 4390, "name": "Techno" },
+      { "id": 4520, "name": "Trance" },
+      { "id": 4529, "name": "Trap" },
+      { "id": 4613, "name": "Underground" }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Pop, Charts & Decades",
+    "displayOrder": 2,
+    "groups": [
+      { "id": 1, "name": "00s" },
+      { "id": 2, "name": "10s" },
+      { "id": 35, "name": "50s" },
+      { "id": 37, "name": "60s" },
+      { "id": 40, "name": "70s" },
+      { "id": 43, "name": "80s" },
+      { "id": 50, "name": "90s" },
+      { "id": 97, "name": "Adult Contemporary" },
+      { "id": 675, "name": "Charts" },
+      { "id": 1777, "name": "Hits" },
+      { "id": 3298, "name": "Oldies" },
+      { "id": 3495, "name": "Pop" },
+      { "id": 4471, "name": "Top 40" }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Urban & Latin",
+    "displayOrder": 3,
+    "groups": [
+      { "id": 1088, "name": "Disco" },
+      { "id": 1286, "name": "Espanol" },
+      { "id": 1486, "name": "Funk" },
+      { "id": 1759, "name": "Hip Hop" },
+      { "id": 2379, "name": "Latin" },
+      { "id": 3790, "name": "R&B" },
+      { "id": 3684, "name": "Rap" },
+      { "id": 3714, "name": "Reggae" },
+      { "id": 3922, "name": "Salsa" },
+      { "id": 4000, "name": "Sertaneja" },
+      { "id": 4123, "name": "Soul" },
+      { "id": 4547, "name": "Tropical" }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Jazz, Chill & Instrumental",
+    "displayOrder": 4,
+    "groups": [
+      { "id": 345, "name": "Ballads" },
+      { "id": 462, "name": "Blues" },
+      { "id": 701, "name": "Chillout" },
+      { "id": 780, "name": "Classical" },
+      { "id": 1171, "name": "Easy Listening" },
+      { "id": 2025, "name": "Jazz" },
+      { "id": 2038, "name": "Jazz Funk" },
+      { "id": 4081, "name": "Smooth Jazz" },
+      { "id": 4308, "name": "Swing" }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "News, Talk & Sports",
+    "displayOrder": 5,
+    "groups": [
+      { "id": 842, "name": "Comedy" },
+      { "id": 3151, "name": "News" },
+      { "id": 4210, "name": "Sports" },
+      { "id": 4350, "name": "Talk" }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Specialty & Mood",
+    "displayOrder": 6,
+    "groups": [
+      { "id": 1792, "name": "Holidays" },
+      { "id": 2113, "name": "Kids" },
+      { "id": 3408, "name": "Party" },
+      { "id": 3735, "name": "Religious" },
+      { "id": 3844, "name": "Romantic" },
+      { "id": 4139, "name": "Soundtrack" }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Global & Cultural",
+    "displayOrder": 7,
+    "groups": [
+      { "id": 903, "name": "Country" },
+      { "id": 1257, "name": "English" },
+      { "id": 1417, "name": "Folk" },
+      { "id": 3955, "name": "Schlager" },
+      { "id": 4508, "name": "Traditional" },
+      { "id": 4849, "name": "World" }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Asia, Pacific & Africa",
+    "displayOrder": 8,
+    "groups": [
+      { "id": 288, "name": "Australia" },
+      { "id": 1880, "name": "India" },
+      { "id": 1901, "name": "Indonesia" },
+      { "id": 1968, "name": "Israel" },
+      { "id": 2012, "name": "Japan" },
+      { "id": 3189, "name": "New Zealand" },
+      { "id": 3437, "name": "Philippines" },
+      { "id": 3951, "name": "Saudi Arabia" },
+      { "id": 4038, "name": "Singapore" },
+      { "id": 4149, "name": "South Africa" },
+      { "id": 4426, "name": "Thailand" },
+      { "id": 4622, "name": "UAE" },
+      { "id": 4591, "name": "Uganda" }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Americas",
+    "displayOrder": 9,
+    "groups": [
+      { "id": 245, "name": "Argentina" },
+      { "id": 518, "name": "Brazil" },
+      { "id": 599, "name": "Canada" },
+      { "id": 693, "name": "Chile" },
+      { "id": 829, "name": "Colombia" },
+      { "id": 1186, "name": "Ecuador" },
+      { "id": 1645, "name": "Guatemala" },
+      { "id": 2903, "name": "Mexico" },
+      { "id": 3394, "name": "Paraguay" },
+      { "id": 3428, "name": "Peru" },
+      { "id": 3619, "name": "Puerto Rico" },
+      { "id": 4661, "name": "USA" },
+      { "id": 4657, "name": "Uruguay" },
+      { "id": 4746, "name": "Venezuela" }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Europe",
+    "displayOrder": 10,
+    "groups": [
+      { "id": 292, "name": "Austria" },
+      { "id": 414, "name": "Belgium" },
+      { "id": 931, "name": "Croatia" },
+      { "id": 963, "name": "Czech Republic" },
+      { "id": 1315, "name": "Europe" },
+      { "id": 1439, "name": "France" },
+      { "id": 1553, "name": "Germany" },
+      { "id": 1607, "name": "Greece" },
+      { "id": 1849, "name": "Hungary" },
+      { "id": 1949, "name": "Ireland" },
+      { "id": 1995, "name": "Italy" },
+      { "id": 3136, "name": "Netherlands" },
+      { "id": 3244, "name": "Norway" },
+      { "id": 3470, "name": "Poland" },
+      { "id": 3534, "name": "Portugal" },
+      { "id": 3836, "name": "Romania" },
+      { "id": 3870, "name": "Russia" },
+      { "id": 3993, "name": "Serbia" },
+      { "id": 4060, "name": "Slovakia" },
+      { "id": 4172, "name": "Spain" },
+      { "id": 4304, "name": "Sweden" },
+      { "id": 4314, "name": "Switzerland" },
+      { "id": 4566, "name": "Turkey" },
+      { "id": 4592, "name": "UK" },
+      { "id": 4593, "name": "Ukraine" }
+    ]
+  }
+]

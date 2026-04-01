@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo:*)",
+      "Bash(flutter create:*)",
+      "Bash(where flutter:*)",
+      "Read(//c/Users/natbo/flutter/bin/**)",
+      "Read(//c/flutter/bin/**)",
+      "Bash(cmd.exe /c \"where flutter 2>&1\")",
+      "Bash(cmd.exe /c \"flutter --version 2>&1\")",
+      "Bash(powershell.exe -Command \"flutter --version\")",
+      "Bash(cmd.exe /c \"echo %PATH%\")"
+    ]
+  }
+}
