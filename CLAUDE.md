@@ -41,6 +41,12 @@ It auto-captures tool usage, generates summaries, and injects relevant context i
 Then restart Claude Code. After that, previous session context is injected automatically.  
 Search past context with `/mem-search <query>` during any session.
 
+## Git Workflow
+- **Commit and push after every completed phase/milestone** using the `/commit` skill
+- Remote: `https://github.com/Natboa/RadioV2-Android.git` (branch: `main`)
+- Commit message format: `feat: Phase N — <description>`
+- Always `git push` after committing — do not leave milestones only local
+
 ## Conventions
 - Run `flutter pub run build_runner build --delete-conflicting-outputs` after any Riverpod or Drift annotation changes
 - Group PNG assets map by exact group name: `assets/images/groups/<GroupName>.png`

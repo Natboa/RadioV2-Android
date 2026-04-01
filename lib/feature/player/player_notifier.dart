@@ -1,0 +1,128 @@
+import 'dart:async';
+import 'package:audio_service/audio_service.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/audio/audio_service_handler.dart';
+import '../../core/data/repository/favourite_repository.dart';
+import '../../core/model/station.dart';
+import '../../core/providers.dart';
+import 'player_state.dart';
+
+class PlayerNotifier extends StateNotifier<PlayerUiState> {
+  final RadioAudioHandler _handler;
+  final FavouriteRepository _favouriteRepo;
+
+  StreamSubscription? _playbackSub;
+  StreamSubscription? _metaSub;
+  StreamSubscription? _connectivitySub;
+  StreamSubscription? _favSub;
+
+  PlayerNotifier(this._handler, this._favouriteRepo)
+      : super(const PlayerUiState()) {
+    _listenPlayback();
+    _listenConnectivity();
+  }
+
+  void _listenPlayback() {
+    _playbackSub = _handler.playbackState.listen((ps) {
+      state = state.copyWith(
+        isPlaying: ps.playing,
+        isBuffering:
+            ps.processingState == AudioProcessingState.loading ||
+            ps.processingState == AudioProcessingState.buffering,
+      );
+    });
+
+    _metaSub = _handler.icyMetadataStream.listen((text) {
+      state = state.copyWith(nowPlayingText: text);
+    });
+  }
+
+  void _listenConnectivity() {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
+      final hasConnection =
+          results.any((r) => r != ConnectivityResult.none);
+      if (hasConnection && state.isBuffering && state.station != null) {
+        _reconnect();
+      }
+    });
+  }
+
+  Future<void> _reconnect() async {
+    final station = state.station;
+    if (station == null) return;
+    await _handler.playUrl(station.streamUrl);
+  }
+
+  Future<void> playStation(Station station, List<Station> playlist) async {
+    state = state.copyWith(
+      station: station,
+      playlist: playlist,
+      isPlaying: false,
+      isBuffering: true,
+      nowPlayingText: null,
+    );
+
+    // Watch favourite status for this station
+    _favSub?.cancel();
+    _favSub = _favouriteRepo.watchIsFavourite(station.id).listen((isFav) {
+      state = state.copyWith(isFavourite: isFav);
+    });
+
+    await _handler.playUrl(station.streamUrl);
+  }
+
+  Future<void> playPause() async {
+    if (state.isPlaying) {
+      await _handler.pause();
+    } else if (state.station != null) {
+      if (state.isBuffering) return;
+      await _handler.play();
+    }
+  }
+
+  Future<void> stop() async {
+    await _handler.stop();
+    _favSub?.cancel();
+    state = const PlayerUiState();
+  }
+
+  Future<void> nextStation() async {
+    final playlist = state.playlist;
+    final current = state.station;
+    if (playlist.isEmpty || current == null) return;
+    final idx = playlist.indexWhere((s) => s.id == current.id);
+    if (idx < 0 || idx >= playlist.length - 1) return;
+    await playStation(playlist[idx + 1], playlist);
+  }
+
+  Future<void> previousStation() async {
+    final playlist = state.playlist;
+    final current = state.station;
+    if (playlist.isEmpty || current == null) return;
+    final idx = playlist.indexWhere((s) => s.id == current.id);
+    if (idx <= 0) return;
+    await playStation(playlist[idx - 1], playlist);
+  }
+
+  Future<void> toggleFavourite(int stationId) async {
+    await _favouriteRepo.toggleFavourite(stationId);
+  }
+
+  @override
+  void dispose() {
+    _playbackSub?.cancel();
+    _metaSub?.cancel();
+    _connectivitySub?.cancel();
+    _favSub?.cancel();
+    super.dispose();
+  }
+}
+
+final playerNotifierProvider =
+    StateNotifierProvider<PlayerNotifier, PlayerUiState>((ref) {
+  return PlayerNotifier(
+    ref.watch(audioHandlerProvider),
+    ref.watch(favouriteRepositoryProvider),
+  );
+});
