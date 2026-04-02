@@ -30,6 +30,7 @@ dependencies:
 
   # Network / images
   cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
   connectivity_plus: ^6.0.3
 
   rxdart: ^0.28.0

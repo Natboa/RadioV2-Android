@@ -13,7 +13,7 @@ import '../feature/favourites/favourites_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoutes.browse,
+    initialLocation: AppRoutes.favourites,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppScaffold(shell: shell),
