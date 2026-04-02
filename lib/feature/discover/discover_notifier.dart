@@ -14,6 +14,22 @@ class DiscoverNotifier extends StateNotifier<DiscoverUiState> {
 
   Future<void> retry() => _load(force: true);
 
+  void setQuery(String query) {
+    final cache = _cache;
+    if (cache == null) return;
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      state = DiscoverSuccess(cache);
+      return;
+    }
+    final lower = trimmed.toLowerCase();
+    final results = cache
+        .expand((c) => c.groups)
+        .where((g) => g.name.toLowerCase().contains(lower))
+        .toList();
+    state = DiscoverSuccess(cache, searchResults: results);
+  }
+
   Future<void> _load({bool force = false}) async {
     if (!force && _cache != null) {
       state = DiscoverSuccess(_cache!);
