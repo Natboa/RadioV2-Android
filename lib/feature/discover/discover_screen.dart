@@ -65,7 +65,7 @@ class _CategoriesList extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 220,
+                height: 180,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding:

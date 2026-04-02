@@ -33,8 +33,7 @@ class StationListItem extends StatelessWidget {
       trailing: IconButton(
         icon: Icon(
           station.isFavourite ? Icons.favorite : Icons.favorite_outline,
-          color:
-              station.isFavourite ? RadioV2Colors.accent : null,
+          color: station.isFavourite ? const Color(0xFFE53935) : null,
         ),
         onPressed: onFavouriteTap,
       ),

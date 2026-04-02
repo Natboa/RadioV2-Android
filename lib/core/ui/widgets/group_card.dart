@@ -23,7 +23,7 @@ class GroupCard extends StatelessWidget {
               child: Image.asset(
                 assetPath,
                 width: 120,
-                height: 160,
+                height: 120,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _placeholder(),
               ),
@@ -54,7 +54,7 @@ class GroupCard extends StatelessWidget {
 
   Widget _placeholder() => Container(
     width: 120,
-    height: 160,
+    height: 120,
     decoration: BoxDecoration(
       color: RadioV2Colors.surfaceVariant,
       borderRadius: BorderRadius.circular(8),

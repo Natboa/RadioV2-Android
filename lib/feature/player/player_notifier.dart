@@ -11,13 +11,14 @@ import 'player_state.dart';
 class PlayerNotifier extends StateNotifier<PlayerUiState> {
   final RadioAudioHandler _handler;
   final FavouriteRepository _favouriteRepo;
+  final void Function(Station) _onStationVisited;
 
   StreamSubscription? _playbackSub;
   StreamSubscription? _metaSub;
   StreamSubscription? _connectivitySub;
   StreamSubscription? _favSub;
 
-  PlayerNotifier(this._handler, this._favouriteRepo)
+  PlayerNotifier(this._handler, this._favouriteRepo, this._onStationVisited)
       : super(const PlayerUiState()) {
     _listenPlayback();
     _listenConnectivity();
@@ -55,6 +56,7 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   }
 
   Future<void> playStation(Station station, List<Station> playlist) async {
+    _onStationVisited(station);
     state = state.copyWith(
       station: station,
       playlist: playlist,
@@ -124,5 +126,12 @@ final playerNotifierProvider =
   return PlayerNotifier(
     ref.watch(audioHandlerProvider),
     ref.watch(favouriteRepositoryProvider),
+    (station) {
+      final current = ref.read(recentlyVisitedProvider);
+      ref.read(recentlyVisitedProvider.notifier).state = [
+        station,
+        ...current.where((s) => s.id != station.id),
+      ].take(50).toList();
+    },
   );
 });
