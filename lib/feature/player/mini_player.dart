@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/designsystem/colors.dart';
+import 'now_playing_screen.dart';
 import 'player_notifier.dart';
 
 class MiniPlayerBar extends ConsumerWidget {
@@ -15,7 +16,24 @@ class MiniPlayerBar extends ConsumerWidget {
 
     final station = state.station!;
 
-    return Container(
+    return GestureDetector(
+      onTap: () => Navigator.of(context, rootNavigator: true).push(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const NowPlayingScreen(),
+          transitionsBuilder: (_, animation, __, child) => SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          ),
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      child: Container(
       height: 72,
       decoration: const BoxDecoration(
         color: RadioV2Colors.surface,
@@ -109,6 +127,7 @@ class MiniPlayerBar extends ConsumerWidget {
           const SizedBox(width: 4),
         ],
       ),
+    ),
     );
   }
 
