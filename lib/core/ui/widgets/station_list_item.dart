@@ -1,9 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/model/station.dart';
+import '../../../core/providers.dart';
 import '../../designsystem/colors.dart';
 
-class StationListItem extends StatelessWidget {
+/// Live favourite status for a station, sourced directly from FavouriteTable.
+final _isFavouriteProvider =
+    StreamProvider.autoDispose.family<bool, int>((ref, stationId) {
+  return ref.watch(favouriteRepositoryProvider).watchIsFavourite(stationId);
+});
+
+class StationListItem extends ConsumerWidget {
   final Station station;
   final bool isPlaying;
   final VoidCallback onTap;
@@ -18,7 +26,10 @@ class StationListItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavourite =
+        ref.watch(_isFavouriteProvider(station.id)).valueOrNull ?? false;
+
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: _StationLogo(logoUrl: station.logoUrl, size: 48),
@@ -32,8 +43,8 @@ class StationListItem extends StatelessWidget {
       ),
       trailing: IconButton(
         icon: Icon(
-          station.isFavourite ? Icons.favorite : Icons.favorite_outline,
-          color: station.isFavourite ? const Color(0xFFE53935) : null,
+          isFavourite ? Icons.favorite : Icons.favorite_outline,
+          color: isFavourite ? const Color(0xFFE53935) : null,
         ),
         onPressed: onFavouriteTap,
       ),
