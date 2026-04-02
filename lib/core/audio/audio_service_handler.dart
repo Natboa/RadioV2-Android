@@ -1,4 +1,5 @@
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
@@ -17,11 +18,20 @@ class RadioAudioHandler extends BaseAudioHandler {
 
   RadioAudioHandler() {
     _player.playbackEventStream.listen(_broadcastPlaybackState);
+    _initAudioSession();
+  }
+
+  Future<void> _initAudioSession() async {
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
   }
 
   Future<void> playUrl(String url) async {
+    icyMetadataStream.add(null);
     try {
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(url)));
+      await _player.setAudioSource(
+        AudioSource.uri(Uri.parse(url), headers: {'Icy-MetaData': '1'}),
+      );
       await _player.play();
     } catch (_) {
       playbackState.add(playbackState.value.copyWith(
@@ -43,6 +53,12 @@ class RadioAudioHandler extends BaseAudioHandler {
   }
 
   void _broadcastPlaybackState(PlaybackEvent event) {
+    // ICY metadata (now-playing title) arrives via PlaybackEvent
+    final icyTitle = event.icyMetadata?.info?.title;
+    if (icyTitle != icyMetadataStream.value) {
+      icyMetadataStream.add(icyTitle);
+    }
+
     final isPlaying = _player.playing;
     playbackState.add(
       PlaybackState(

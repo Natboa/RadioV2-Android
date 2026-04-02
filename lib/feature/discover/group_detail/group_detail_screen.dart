@@ -71,7 +71,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             child: Text(
               'Featured',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: RadioV2Colors.accent,
                 fontWeight: FontWeight.bold,
               ),
             ),

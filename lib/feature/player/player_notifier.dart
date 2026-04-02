@@ -26,11 +26,13 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
 
   void _listenPlayback() {
     _playbackSub = _handler.playbackState.listen((ps) {
+      final isError = ps.processingState == AudioProcessingState.error;
       state = state.copyWith(
         isPlaying: ps.playing,
         isBuffering:
             ps.processingState == AudioProcessingState.loading ||
             ps.processingState == AudioProcessingState.buffering,
+        isError: isError,
       );
     });
 
@@ -57,12 +59,11 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
 
   Future<void> playStation(Station station, List<Station> playlist) async {
     _onStationVisited(station);
-    state = state.copyWith(
+    // Create a fresh state so nowPlayingText and isError are truly cleared
+    state = PlayerUiState(
       station: station,
       playlist: playlist,
-      isPlaying: false,
       isBuffering: true,
-      nowPlayingText: null,
     );
 
     // Watch favourite status for this station

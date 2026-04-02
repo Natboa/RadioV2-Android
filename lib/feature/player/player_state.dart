@@ -7,6 +7,7 @@ class PlayerUiState {
   final List<Station> playlist;
   final bool isPlaying;
   final bool isBuffering;
+  final bool isError;
   final String? nowPlayingText;
   final bool isFavourite;
 
@@ -15,6 +16,7 @@ class PlayerUiState {
     this.playlist = const [],
     this.isPlaying = false,
     this.isBuffering = false,
+    this.isError = false,
     this.nowPlayingText,
     this.isFavourite = false,
   });
@@ -26,6 +28,7 @@ class PlayerUiState {
     List<Station>? playlist,
     bool? isPlaying,
     bool? isBuffering,
+    bool? isError,
     String? nowPlayingText,
     bool? isFavourite,
   }) {
@@ -34,6 +37,7 @@ class PlayerUiState {
       playlist: playlist ?? this.playlist,
       isPlaying: isPlaying ?? this.isPlaying,
       isBuffering: isBuffering ?? this.isBuffering,
+      isError: isError ?? this.isError,
       nowPlayingText: nowPlayingText ?? this.nowPlayingText,
       isFavourite: isFavourite ?? this.isFavourite,
     );

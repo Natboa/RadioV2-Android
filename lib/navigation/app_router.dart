@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'app_destinations.dart';
+import '../core/designsystem/colors.dart';
 import '../feature/browse/browse_screen.dart';
 import '../feature/player/mini_player.dart';
+import '../feature/player/player_notifier.dart';
+import '../feature/player/player_state.dart';
 import '../feature/discover/discover_screen.dart';
 import '../feature/discover/group_detail/group_detail_screen.dart';
 import '../feature/favourites/favourites_screen.dart';
@@ -62,6 +65,19 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<PlayerUiState>(playerNotifierProvider, (prev, next) {
+      if (next.isError && !(prev?.isError ?? false)) {
+        final name = next.station?.name ?? 'Station';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$name is offline or unavailable.'),
+            backgroundColor: RadioV2Colors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       body: shell,
       bottomNavigationBar: Column(

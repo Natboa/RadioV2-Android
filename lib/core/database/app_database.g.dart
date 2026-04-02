@@ -12,7 +12,7 @@ class $CategoriesTable extends Categories
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
+      'Id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
@@ -21,13 +21,13 @@ class $CategoriesTable extends Categories
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+      'Name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _displayOrderMeta =
       const VerificationMeta('displayOrder');
   @override
   late final GeneratedColumn<int> displayOrder = GeneratedColumn<int>(
-      'display_order', aliasedName, false,
+      'DisplayOrder', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
@@ -43,20 +43,20 @@ class $CategoriesTable extends Categories
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    if (data.containsKey('Id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['Id']!, _idMeta));
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('Name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['Name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('display_order')) {
+    if (data.containsKey('DisplayOrder')) {
       context.handle(
           _displayOrderMeta,
           displayOrder.isAcceptableOrUnknown(
-              data['display_order']!, _displayOrderMeta));
+              data['DisplayOrder']!, _displayOrderMeta));
     }
     return context;
   }
@@ -68,11 +68,11 @@ class $CategoriesTable extends Categories
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Category(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}Id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}Name'])!,
       displayOrder: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}display_order'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}DisplayOrder'])!,
     );
   }
 
@@ -91,9 +91,9 @@ class Category extends DataClass implements Insertable<Category> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    map['display_order'] = Variable<int>(displayOrder);
+    map['Id'] = Variable<int>(id);
+    map['Name'] = Variable<String>(name);
+    map['DisplayOrder'] = Variable<int>(displayOrder);
     return map;
   }
 
@@ -180,9 +180,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<int>? displayOrder,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (displayOrder != null) 'display_order': displayOrder,
+      if (id != null) 'Id': id,
+      if (name != null) 'Name': name,
+      if (displayOrder != null) 'DisplayOrder': displayOrder,
     });
   }
 
@@ -199,13 +199,13 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['Id'] = Variable<int>(id.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['Name'] = Variable<String>(name.value);
     }
     if (displayOrder.present) {
-      map['display_order'] = Variable<int>(displayOrder.value);
+      map['DisplayOrder'] = Variable<int>(displayOrder.value);
     }
     return map;
   }
@@ -229,7 +229,7 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
+      'Id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
@@ -238,7 +238,7 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+      'Name', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
@@ -246,11 +246,11 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
       const VerificationMeta('categoryId');
   @override
   late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
-      'category_id', aliasedName, true,
+      'CategoryId', aliasedName, true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES categories (id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES categories (Id)'));
   @override
   List<GeneratedColumn> get $columns => [id, name, categoryId];
   @override
@@ -263,20 +263,20 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    if (data.containsKey('Id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['Id']!, _idMeta));
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('Name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['Name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('category_id')) {
+    if (data.containsKey('CategoryId')) {
       context.handle(
           _categoryIdMeta,
           categoryId.isAcceptableOrUnknown(
-              data['category_id']!, _categoryIdMeta));
+              data['CategoryId']!, _categoryIdMeta));
     }
     return context;
   }
@@ -288,11 +288,11 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Group(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}Id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}Name'])!,
       categoryId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category_id']),
+          .read(DriftSqlType.int, data['${effectivePrefix}CategoryId']),
     );
   }
 
@@ -310,10 +310,10 @@ class Group extends DataClass implements Insertable<Group> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
+    map['Id'] = Variable<int>(id);
+    map['Name'] = Variable<String>(name);
     if (!nullToAbsent || categoryId != null) {
-      map['category_id'] = Variable<int>(categoryId);
+      map['CategoryId'] = Variable<int>(categoryId);
     }
     return map;
   }
@@ -406,9 +406,9 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     Expression<int>? categoryId,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (categoryId != null) 'category_id': categoryId,
+      if (id != null) 'Id': id,
+      if (name != null) 'Name': name,
+      if (categoryId != null) 'CategoryId': categoryId,
     });
   }
 
@@ -425,13 +425,13 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['Id'] = Variable<int>(id.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['Name'] = Variable<String>(name.value);
     }
     if (categoryId.present) {
-      map['category_id'] = Variable<int>(categoryId.value);
+      map['CategoryId'] = Variable<int>(categoryId.value);
     }
     return map;
   }
@@ -455,7 +455,7 @@ class $StationsTable extends Stations with TableInfo<$StationsTable, Station> {
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
+      'Id', aliasedName, false,
       hasAutoIncrement: true,
       type: DriftSqlType.int,
       requiredDuringInsert: false,
@@ -464,13 +464,13 @@ class $StationsTable extends Stations with TableInfo<$StationsTable, Station> {
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
-      'name', aliasedName, false,
+      'Name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _streamUrlMeta =
       const VerificationMeta('streamUrl');
   @override
   late final GeneratedColumn<String> streamUrl = GeneratedColumn<String>(
-      'stream_url', aliasedName, false,
+      'StreamUrl', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
@@ -478,36 +478,36 @@ class $StationsTable extends Stations with TableInfo<$StationsTable, Station> {
       const VerificationMeta('logoUrl');
   @override
   late final GeneratedColumn<String> logoUrl = GeneratedColumn<String>(
-      'logo_url', aliasedName, true,
+      'LogoUrl', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _groupIdMeta =
       const VerificationMeta('groupId');
   @override
   late final GeneratedColumn<int> groupId = GeneratedColumn<int>(
-      'group_id', aliasedName, false,
+      'GroupId', aliasedName, false,
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES "groups" (id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES "groups" (Id)'));
   static const VerificationMeta _isFavoriteMeta =
       const VerificationMeta('isFavorite');
   @override
   late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
-      'is_favorite', aliasedName, false,
+      'IsFavorite', aliasedName, false,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_favorite" IN (0, 1))'),
+          GeneratedColumn.constraintIsAlways('CHECK ("IsFavorite" IN (0, 1))'),
       defaultValue: const Constant(false));
   static const VerificationMeta _isFeaturedMeta =
       const VerificationMeta('isFeatured');
   @override
   late final GeneratedColumn<bool> isFeatured = GeneratedColumn<bool>(
-      'is_featured', aliasedName, false,
+      'IsFeatured', aliasedName, false,
       type: DriftSqlType.bool,
       requiredDuringInsert: false,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_featured" IN (0, 1))'),
+          GeneratedColumn.constraintIsAlways('CHECK ("IsFeatured" IN (0, 1))'),
       defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns =>
@@ -522,42 +522,42 @@ class $StationsTable extends Stations with TableInfo<$StationsTable, Station> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    if (data.containsKey('Id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['Id']!, _idMeta));
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('Name')) {
       context.handle(
-          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+          _nameMeta, name.isAcceptableOrUnknown(data['Name']!, _nameMeta));
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('stream_url')) {
+    if (data.containsKey('StreamUrl')) {
       context.handle(_streamUrlMeta,
-          streamUrl.isAcceptableOrUnknown(data['stream_url']!, _streamUrlMeta));
+          streamUrl.isAcceptableOrUnknown(data['StreamUrl']!, _streamUrlMeta));
     } else if (isInserting) {
       context.missing(_streamUrlMeta);
     }
-    if (data.containsKey('logo_url')) {
+    if (data.containsKey('LogoUrl')) {
       context.handle(_logoUrlMeta,
-          logoUrl.isAcceptableOrUnknown(data['logo_url']!, _logoUrlMeta));
+          logoUrl.isAcceptableOrUnknown(data['LogoUrl']!, _logoUrlMeta));
     }
-    if (data.containsKey('group_id')) {
+    if (data.containsKey('GroupId')) {
       context.handle(_groupIdMeta,
-          groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta));
+          groupId.isAcceptableOrUnknown(data['GroupId']!, _groupIdMeta));
     } else if (isInserting) {
       context.missing(_groupIdMeta);
     }
-    if (data.containsKey('is_favorite')) {
+    if (data.containsKey('IsFavorite')) {
       context.handle(
           _isFavoriteMeta,
           isFavorite.isAcceptableOrUnknown(
-              data['is_favorite']!, _isFavoriteMeta));
+              data['IsFavorite']!, _isFavoriteMeta));
     }
-    if (data.containsKey('is_featured')) {
+    if (data.containsKey('IsFeatured')) {
       context.handle(
           _isFeaturedMeta,
           isFeatured.isAcceptableOrUnknown(
-              data['is_featured']!, _isFeaturedMeta));
+              data['IsFeatured']!, _isFeaturedMeta));
     }
     return context;
   }
@@ -569,19 +569,19 @@ class $StationsTable extends Stations with TableInfo<$StationsTable, Station> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Station(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}Id'])!,
       name: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}Name'])!,
       streamUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}stream_url'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}StreamUrl'])!,
       logoUrl: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}logo_url']),
+          .read(DriftSqlType.string, data['${effectivePrefix}LogoUrl']),
       groupId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}group_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}GroupId'])!,
       isFavorite: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_favorite'])!,
+          .read(DriftSqlType.bool, data['${effectivePrefix}IsFavorite'])!,
       isFeatured: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_featured'])!,
+          .read(DriftSqlType.bool, data['${effectivePrefix}IsFeatured'])!,
     );
   }
 
@@ -610,15 +610,15 @@ class Station extends DataClass implements Insertable<Station> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
-    map['stream_url'] = Variable<String>(streamUrl);
+    map['Id'] = Variable<int>(id);
+    map['Name'] = Variable<String>(name);
+    map['StreamUrl'] = Variable<String>(streamUrl);
     if (!nullToAbsent || logoUrl != null) {
-      map['logo_url'] = Variable<String>(logoUrl);
+      map['LogoUrl'] = Variable<String>(logoUrl);
     }
-    map['group_id'] = Variable<int>(groupId);
-    map['is_favorite'] = Variable<bool>(isFavorite);
-    map['is_featured'] = Variable<bool>(isFeatured);
+    map['GroupId'] = Variable<int>(groupId);
+    map['IsFavorite'] = Variable<bool>(isFavorite);
+    map['IsFeatured'] = Variable<bool>(isFeatured);
     return map;
   }
 
@@ -762,13 +762,13 @@ class StationsCompanion extends UpdateCompanion<Station> {
     Expression<bool>? isFeatured,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (streamUrl != null) 'stream_url': streamUrl,
-      if (logoUrl != null) 'logo_url': logoUrl,
-      if (groupId != null) 'group_id': groupId,
-      if (isFavorite != null) 'is_favorite': isFavorite,
-      if (isFeatured != null) 'is_featured': isFeatured,
+      if (id != null) 'Id': id,
+      if (name != null) 'Name': name,
+      if (streamUrl != null) 'StreamUrl': streamUrl,
+      if (logoUrl != null) 'LogoUrl': logoUrl,
+      if (groupId != null) 'GroupId': groupId,
+      if (isFavorite != null) 'IsFavorite': isFavorite,
+      if (isFeatured != null) 'IsFeatured': isFeatured,
     });
   }
 
@@ -795,25 +795,25 @@ class StationsCompanion extends UpdateCompanion<Station> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['Id'] = Variable<int>(id.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['Name'] = Variable<String>(name.value);
     }
     if (streamUrl.present) {
-      map['stream_url'] = Variable<String>(streamUrl.value);
+      map['StreamUrl'] = Variable<String>(streamUrl.value);
     }
     if (logoUrl.present) {
-      map['logo_url'] = Variable<String>(logoUrl.value);
+      map['LogoUrl'] = Variable<String>(logoUrl.value);
     }
     if (groupId.present) {
-      map['group_id'] = Variable<int>(groupId.value);
+      map['GroupId'] = Variable<int>(groupId.value);
     }
     if (isFavorite.present) {
-      map['is_favorite'] = Variable<bool>(isFavorite.value);
+      map['IsFavorite'] = Variable<bool>(isFavorite.value);
     }
     if (isFeatured.present) {
-      map['is_featured'] = Variable<bool>(isFeatured.value);
+      map['IsFeatured'] = Variable<bool>(isFeatured.value);
     }
     return map;
   }
@@ -856,7 +856,7 @@ class $FavouritesTable extends Favourites
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'UNIQUE REFERENCES stations (id)'));
+          'UNIQUE REFERENCES stations (Id)'));
   @override
   List<GeneratedColumn> get $columns => [id, stationId];
   @override
@@ -1058,7 +1058,7 @@ final class $$CategoriesTableReferences
 
   $$GroupsTableProcessedTableManager get groupsRefs {
     final manager = $$GroupsTableTableManager($_db, $_db.groups)
-        .filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('Id')!));
 
     final cache = $_typedResult.readTableOrNull(_groupsRefsTable($_db));
     return ProcessedTableManager(
@@ -1273,7 +1273,7 @@ final class $$GroupsTableReferences
           $_aliasNameGenerator(db.groups.categoryId, db.categories.id));
 
   $$CategoriesTableProcessedTableManager? get categoryId {
-    final $_column = $_itemColumn<int>('category_id');
+    final $_column = $_itemColumn<int>('CategoryId');
     if ($_column == null) return null;
     final manager = $$CategoriesTableTableManager($_db, $_db.categories)
         .filter((f) => f.id.sqlEquals($_column));
@@ -1290,7 +1290,7 @@ final class $$GroupsTableReferences
 
   $$StationsTableProcessedTableManager get stationsRefs {
     final manager = $$StationsTableTableManager($_db, $_db.stations)
-        .filter((f) => f.groupId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.groupId.id.sqlEquals($_itemColumn<int>('Id')!));
 
     final cache = $_typedResult.readTableOrNull(_stationsRefsTable($_db));
     return ProcessedTableManager(
@@ -1583,7 +1583,7 @@ final class $$StationsTableReferences
       .createAlias($_aliasNameGenerator(db.stations.groupId, db.groups.id));
 
   $$GroupsTableProcessedTableManager get groupId {
-    final $_column = $_itemColumn<int>('group_id')!;
+    final $_column = $_itemColumn<int>('GroupId')!;
 
     final manager = $$GroupsTableTableManager($_db, $_db.groups)
         .filter((f) => f.id.sqlEquals($_column));
@@ -1601,7 +1601,7 @@ final class $$StationsTableReferences
 
   $$FavouritesTableProcessedTableManager get favouritesRefs {
     final manager = $$FavouritesTableTableManager($_db, $_db.favourites)
-        .filter((f) => f.stationId.id.sqlEquals($_itemColumn<int>('id')!));
+        .filter((f) => f.stationId.id.sqlEquals($_itemColumn<int>('Id')!));
 
     final cache = $_typedResult.readTableOrNull(_favouritesRefsTable($_db));
     return ProcessedTableManager(

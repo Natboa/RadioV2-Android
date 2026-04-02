@@ -30,13 +30,20 @@ class StationDao extends DatabaseAccessor<AppDatabase>
   }) {
     return (select(stations)
           ..where((s) {
-            final byGroup = s.groupId.equals(groupId);
+            final byGroup =
+                s.groupId.equals(groupId) & s.isFeatured.isValue(false);
             if (query != null && query.isNotEmpty) {
               return byGroup & s.name.lower().like('%${query.toLowerCase()}%');
             }
             return byGroup;
           })
-          ..orderBy([(s) => OrderingTerm.asc(s.name)])
+          ..orderBy([
+            (s) => OrderingTerm(
+              expression: s.logoUrl.isNotNull(),
+              mode: OrderingMode.desc,
+            ),
+            (s) => OrderingTerm.asc(s.name),
+          ])
           ..limit(limit, offset: offset))
         .get();
   }
@@ -44,7 +51,13 @@ class StationDao extends DatabaseAccessor<AppDatabase>
   Future<List<Station>> getFeaturedByGroup(int groupId) {
     return (select(stations)
           ..where((s) => s.groupId.equals(groupId) & s.isFeatured.isValue(true))
-          ..orderBy([(s) => OrderingTerm.asc(s.name)]))
+          ..orderBy([
+            (s) => OrderingTerm(
+              expression: s.logoUrl.isNotNull(),
+              mode: OrderingMode.desc,
+            ),
+            (s) => OrderingTerm.asc(s.name),
+          ]))
         .get();
   }
 
