@@ -60,7 +60,7 @@ class _CategoriesList extends StatelessWidget {
         for (final catWithGroups in categories)
           if (catWithGroups.groups.isNotEmpty) ...[
             SliverPersistentHeader(
-              pinned: true,
+              pinned: false,
               delegate: _CategoryHeaderDelegate(catWithGroups.category.name),
             ),
             SliverToBoxAdapter(

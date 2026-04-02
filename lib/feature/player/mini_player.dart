@@ -98,7 +98,7 @@ class MiniPlayerBar extends ConsumerWidget {
           IconButton(
             icon: Icon(
               state.isFavourite ? Icons.favorite : Icons.favorite_outline,
-              color: state.isFavourite ? RadioV2Colors.accent : null,
+              color: state.isFavourite ? const Color(0xFFE53935) : null,
             ),
             onPressed: state.station != null
                 ? () => ref
