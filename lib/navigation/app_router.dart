@@ -34,10 +34,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'group/:groupId',
-                    builder: (context, state) {
+                    pageBuilder: (context, state) {
                       final groupId =
                           int.parse(state.pathParameters['groupId']!);
-                      return GroupDetailScreen(groupId: groupId);
+                      return CustomTransitionPage(
+                        key: state.pageKey,
+                        child: GroupDetailScreen(groupId: groupId),
+                        transitionDuration: const Duration(milliseconds: 300),
+                        reverseTransitionDuration:
+                            const Duration(milliseconds: 250),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) =>
+                                SlideTransition(
+                          position: Tween(
+                            begin: const Offset(1, 0),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          )),
+                          child: child,
+                        ),
+                      );
                     },
                   ),
                 ],

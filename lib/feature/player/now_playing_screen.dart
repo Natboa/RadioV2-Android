@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/designsystem/colors.dart';
+import '../../core/model/station.dart';
 import 'player_notifier.dart';
 import 'player_state.dart';
 
@@ -12,7 +13,6 @@ class NowPlayingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(playerNotifierProvider);
 
-    // Should never be shown when idle, but guard anyway
     if (state.isIdle) {
       WidgetsBinding.instance.addPostFrameCallback((_) => Navigator.pop(context));
       return const SizedBox.shrink();
@@ -64,7 +64,11 @@ class NowPlayingScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // ── Album art ───────────────────────────────────────────────
-            _AlbumArt(station: station, isBuffering: state.isBuffering),
+            _AlbumArt(
+              station: station,
+              isBuffering: state.isBuffering,
+              isError: state.isError,
+            ),
 
             const SizedBox(height: 32),
 
@@ -86,22 +90,42 @@ class NowPlayingScreen extends ConsumerWidget {
 
             const SizedBox(height: 10),
 
-            // ── ICY now-playing text ─────────────────────────────────────
+            // ── ICY text or error notice ─────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
-                child: Text(
-                  key: ValueKey(state.nowPlayingText),
-                  state.nowPlayingText?.isNotEmpty == true
-                      ? state.nowPlayingText!
-                      : 'Live',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: RadioV2Colors.onSurfaceVariant,
-                    fontSize: 14,
-                  ),
-                ),
+                child: state.isError
+                    ? const Row(
+                        key: ValueKey('error'),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.wifi_off_rounded,
+                            color: RadioV2Colors.error,
+                            size: 16,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Stream offline or unavailable',
+                            style: TextStyle(
+                              color: RadioV2Colors.error,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Text(
+                        key: ValueKey(state.nowPlayingText),
+                        state.nowPlayingText?.isNotEmpty == true
+                            ? state.nowPlayingText!
+                            : 'Live',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: RadioV2Colors.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
               ),
             ),
 
@@ -118,13 +142,18 @@ class NowPlayingScreen extends ConsumerWidget {
   }
 }
 
-// ── Album art with buffering overlay ──────────────────────────────────────────
+// ── Album art ──────────────────────────────────────────────────────────────────
 
 class _AlbumArt extends StatelessWidget {
-  final dynamic station;
+  final Station station;
   final bool isBuffering;
+  final bool isError;
 
-  const _AlbumArt({required this.station, required this.isBuffering});
+  const _AlbumArt({
+    required this.station,
+    required this.isBuffering,
+    required this.isError,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,21 +162,31 @@ class _AlbumArt extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: station.logoUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: station.logoUrl as String,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.cover,
-                  errorWidget: (_, __, ___) => _placeholder(size),
-                  placeholder: (_, __) => _placeholder(size),
-                )
-              : _placeholder(size),
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: isError ? 0.35 : 1.0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: station.logoUrl != null
+                ? CachedNetworkImage(
+                    imageUrl: station.logoUrl!,
+                    width: size,
+                    height: size,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => _placeholder(size),
+                    placeholder: (_, __) => _placeholder(size),
+                  )
+                : _placeholder(size),
+          ),
         ),
         if (isBuffering)
           const CircularProgressIndicator(strokeWidth: 3),
+        if (isError)
+          Icon(
+            Icons.wifi_off_rounded,
+            color: RadioV2Colors.error.withValues(alpha: 0.9),
+            size: size * 0.25,
+          ),
       ],
     );
   }
@@ -192,12 +231,14 @@ class _Controls extends StatelessWidget {
 
         // Play / Pause — large filled circle
         GestureDetector(
-          onTap: () => notifier.playPause(),
+          onTap: state.isBuffering ? null : () => notifier.playPause(),
           child: Container(
             width: 76,
             height: 76,
-            decoration: const BoxDecoration(
-              color: RadioV2Colors.accent,
+            decoration: BoxDecoration(
+              color: state.isError
+                  ? RadioV2Colors.error
+                  : RadioV2Colors.accent,
               shape: BoxShape.circle,
             ),
             child: state.isBuffering
