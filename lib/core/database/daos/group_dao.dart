@@ -25,17 +25,28 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
   Future<List<GroupWithCount>> getGroupsWithCountByCategory(
     int categoryId,
   ) async {
-    final groupList = await getGroupsByCategory(categoryId);
-    final result = <GroupWithCount>[];
-    for (final group in groupList) {
-      final count = await (selectOnly(stations)
-            ..addColumns([stations.id.count()])
-            ..where(stations.groupId.equals(group.id)))
-          .map((row) => row.read(stations.id.count()) ?? 0)
-          .getSingle();
-      result.add(GroupWithCount(group: group, stationCount: count));
-    }
-    return result;
+    final all = await getAllGroupsWithCount();
+    return all.where((g) => g.group.categoryId == categoryId).toList();
+  }
+
+  /// Single LEFT JOIN query — returns every group with its station count.
+  Future<List<GroupWithCount>> getAllGroupsWithCount() async {
+    final countCol = stations.id.count();
+    final rows = await (select(groups).join([
+      leftOuterJoin(stations, stations.groupId.equalsExp(groups.id)),
+    ])
+          ..addColumns([countCol])
+          ..groupBy([groups.id])
+          ..orderBy([OrderingTerm.asc(groups.name)]))
+        .get();
+    return rows
+        .map(
+          (row) => GroupWithCount(
+            group: row.readTable(groups),
+            stationCount: row.read(countCol) ?? 0,
+          ),
+        )
+        .toList();
   }
 
   Future<Group?> getGroupById(int id) {

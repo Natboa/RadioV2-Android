@@ -64,19 +64,33 @@ class StationRepositoryImpl implements StationRepository {
 
   @override
   Future<List<CategoryWithGroups>> getAllCategoriesWithGroups() async {
+    // 2 queries total, merged in memory — mirrors the desktop approach
     final cats = await _db.categoryDao.getAllCategories();
-    final groupsList = await Future.wait(
-      cats.map((cat) => getGroupsWithCountByCategory(cat.id)),
-    );
+    final allGroups = await _db.groupDao.getAllGroupsWithCount();
+
+    final byCategory = <int, List<Group>>{};
+    for (final gwc in allGroups) {
+      final catId = gwc.group.categoryId;
+      if (catId == null) continue;
+      byCategory.putIfAbsent(catId, () => []).add(
+        Group(
+          id: gwc.group.id,
+          name: gwc.group.name,
+          categoryId: gwc.group.categoryId,
+          stationCount: gwc.stationCount,
+        ),
+      );
+    }
+
     return [
-      for (var i = 0; i < cats.length; i++)
+      for (final cat in cats)
         CategoryWithGroups(
           category: Category(
-            id: cats[i].id,
-            name: cats[i].name,
-            displayOrder: cats[i].displayOrder,
+            id: cat.id,
+            name: cat.name,
+            displayOrder: cat.displayOrder,
           ),
-          groups: groupsList[i],
+          groups: byCategory[cat.id] ?? [],
         ),
     ];
   }
