@@ -129,20 +129,35 @@ class _SearchResultsGrid extends StatelessWidget {
       );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 16,
-        childAspectRatio: 120 / 160, // matches GroupCard proportions
-      ),
-      itemCount: groups.length,
-      itemBuilder: (context, index) {
-        final group = groups[index];
-        return GroupCard(
-          group: group,
-          onTap: () => context.push(AppRoutes.groupDetailPath(group.id)),
+    const cols = 3;
+    const hPadding = 16.0;
+    const spacing = 12.0;
+    // Text area below image: gap(6) + name(~14) + count(~12) = 32
+    const textHeight = 32.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final imageSize =
+            (constraints.maxWidth - hPadding * 2 - spacing * (cols - 1)) / cols;
+        final cellHeight = imageSize + textHeight;
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(hPadding),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: 16,
+            childAspectRatio: imageSize / cellHeight,
+          ),
+          itemCount: groups.length,
+          itemBuilder: (context, index) {
+            final group = groups[index];
+            return GroupCard(
+              group: group,
+              size: imageSize,
+              onTap: () => context.push(AppRoutes.groupDetailPath(group.id)),
+            );
+          },
         );
       },
     );
@@ -168,7 +183,7 @@ class _CategoriesList extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 180,
+                height: 210, // image(140) + gap(6) + two text lines(~14+12) + v-pad(8*2)
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding:

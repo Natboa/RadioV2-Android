@@ -5,8 +5,15 @@ import '../../designsystem/colors.dart';
 class GroupCard extends StatelessWidget {
   final Group group;
   final VoidCallback onTap;
+  /// Size of the square image. Also sets the card width.
+  final double size;
 
-  const GroupCard({super.key, required this.group, required this.onTap});
+  const GroupCard({
+    super.key,
+    required this.group,
+    required this.onTap,
+    this.size = 140,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +21,7 @@ class GroupCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 120,
+        width: size,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -22,8 +29,8 @@ class GroupCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
                 assetPath,
-                width: 120,
-                height: 120,
+                width: size,
+                height: size,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _placeholder(),
               ),
@@ -53,8 +60,8 @@ class GroupCard extends StatelessWidget {
       'assets/images/groups/$groupName.png';
 
   Widget _placeholder() => Container(
-    width: 120,
-    height: 120,
+    width: size,
+    height: size,
     decoration: BoxDecoration(
       color: RadioV2Colors.surfaceVariant,
       borderRadius: BorderRadius.circular(8),
