@@ -66,7 +66,7 @@ final groupDetailNotifierProvider = StateNotifierProvider.family<
 >((ref, groupId) {
   return GroupDetailNotifier(
     ref.watch(stationRepositoryProvider),
-    ref.watch(appDatabaseProvider),
+    ref.watch(appDatabaseProvider).requireValue,
     groupId,
   );
 });

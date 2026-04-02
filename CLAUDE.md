@@ -29,20 +29,28 @@ Plan: `IMPLEMENTATION_PLAN.md`. Features spec: `APP_FEATURES.md`.
 ## Skills to Use
 - **`claude-android-skill-main/`** — reference for architecture patterns, adapt Kotlin/Hilt/Room examples to Flutter/Riverpod/Drift equivalents (see mapping table in IMPLEMENTATION_PLAN.md)
 
-## Memory (claude-mem)
-This project uses [claude-mem](https://github.com/thedotmack/claude-mem) for persistent memory across sessions.  
-It auto-captures tool usage, generates summaries, and injects relevant context into future conversations.
+## Memory
 
-**First-time setup** (run once in the Claude Code terminal):
+### File-based memory (always active)
+Memory lives at `C:\Users\natbo\.claude\projects\c--VS-Code-repos-RadioV2-Android\memory\`.  
+**Rules — must follow every session:**
+- Read `MEMORY.md` index at the start of every conversation
+- Save anything worth knowing in future sessions: bugs found, architectural decisions, patterns discovered, performance findings, user preferences, things that went wrong
+- Update or remove stale entries — don't let memory go out of date
+- Types to save: `user`, `feedback`, `project`, `reference` (see memory system rules)
+- After every completed task or milestone, ask: *"Is there anything here worth saving to memory?"*
+
+### claude-mem (optional auto-capture)
+If installed, auto-captures tool usage and generates session summaries.  
+**Setup** (run once in the Claude Code terminal):
 ```
 /plugin marketplace add thedotmack/claude-mem
 /plugin install claude-mem
 ```
-Then restart Claude Code. After that, previous session context is injected automatically.  
-Search past context with `/mem-search <query>` during any session.
+Then restart Claude Code. Search past context with `/mem-search <query>`.
 
 ## Git Workflow
-- **Commit and push after every completed phase/milestone** using the `/commit` skill
+- **Commit and push after every completed phase/milestone** (use `git add`, `git commit`, `git push` via Bash)
 - Remote: `https://github.com/Natboa/RadioV2-Android.git` (branch: `main`)
 - Commit message format: `feat: Phase N — <description>`
 - Always `git push` after committing — do not leave milestones only local
