@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/model/station.dart';
 import '../../../core/providers.dart';
 import '../../designsystem/colors.dart';
+import 'sound_bars.dart';
 
 /// Live favourite status for a station, sourced directly from FavouriteTable.
 final _isFavouriteProvider =
@@ -33,13 +34,23 @@ class StationListItem extends ConsumerWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: _StationLogo(logoUrl: station.logoUrl, size: 48),
-      title: Text(
-        station.name,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: isPlaying ? RadioV2Colors.accent : null,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              station.name,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: isPlaying ? RadioV2Colors.accent : null,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (isPlaying) ...[
+            const SizedBox(width: 8),
+            SoundBars(isAnimating: isPlaying),
+          ],
+        ],
       ),
       trailing: IconButton(
         icon: Icon(
