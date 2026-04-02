@@ -65,21 +65,20 @@ class StationRepositoryImpl implements StationRepository {
   @override
   Future<List<CategoryWithGroups>> getAllCategoriesWithGroups() async {
     final cats = await _db.categoryDao.getAllCategories();
-    final result = <CategoryWithGroups>[];
-    for (final cat in cats) {
-      final groups = await getGroupsWithCountByCategory(cat.id);
-      result.add(
+    final groupsList = await Future.wait(
+      cats.map((cat) => getGroupsWithCountByCategory(cat.id)),
+    );
+    return [
+      for (var i = 0; i < cats.length; i++)
         CategoryWithGroups(
           category: Category(
-            id: cat.id,
-            name: cat.name,
-            displayOrder: cat.displayOrder,
+            id: cats[i].id,
+            name: cats[i].name,
+            displayOrder: cats[i].displayOrder,
           ),
-          groups: groups,
+          groups: groupsList[i],
         ),
-      );
-    }
-    return result;
+    ];
   }
 
   Station _mapStation(db.Station row) => Station(

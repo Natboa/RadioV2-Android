@@ -112,7 +112,7 @@ class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   ) {
     return Container(
       color: RadioV2Colors.background,
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         title,
