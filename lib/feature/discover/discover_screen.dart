@@ -129,7 +129,7 @@ class _SearchResultsGrid extends StatelessWidget {
       );
     }
 
-    const cols = 3;
+    const cols = 2;
     const hPadding = 16.0;
     const spacing = 12.0;
     // Text area below image: gap(6) + name(~14) + count(~12) = 32
@@ -183,7 +183,7 @@ class _CategoriesList extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 210, // image(140) + gap(6) + two text lines(~14+12) + v-pad(8*2)
+                height: 230, // image(160) + gap(6) + two text lines(~14+12) + v-pad(8*2)
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding:
