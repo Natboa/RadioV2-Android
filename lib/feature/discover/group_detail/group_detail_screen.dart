@@ -82,7 +82,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         if (hasFeatured && index < headerOffset + featured.length) {
           final station = featured[index - headerOffset];
           final isPlaying = playerState.maybeWhen(
-            active: (s, _, __, ___, ____) => s.id == station.id,
+            active: (s, playing, _, __, ___) => s.id == station.id && playing,
             orElse: () => false,
           );
           return StationListItem(
@@ -118,7 +118,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
         final station = stations[stationIndex];
         final isPlaying = playerState.maybeWhen(
-          active: (s, _, __, ___, ____) => s.id == station.id,
+          active: (s, playing, _, __, ___) => s.id == station.id && playing,
           orElse: () => false,
         );
         return StationListItem(

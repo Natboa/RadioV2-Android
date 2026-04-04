@@ -62,7 +62,7 @@ class FavouritesScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final station = stations[index];
             final isPlaying = playerState.maybeWhen(
-              active: (s, _, __, ___, ____) => s.id == station.id,
+              active: (s, playing, _, __, ___) => s.id == station.id && playing,
               orElse: () => false,
             );
             return StationListItem(

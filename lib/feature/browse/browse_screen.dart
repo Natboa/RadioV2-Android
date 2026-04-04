@@ -157,7 +157,7 @@ class _RecentlyVisitedView extends ConsumerWidget {
         }
         final station = stations[index - 1];
         final isPlaying = playerState.maybeWhen(
-          active: (s, _, __, ___, ____) => s.id == station.id,
+          active: (s, playing, _, __, ___) => s.id == station.id && playing,
           orElse: () => false,
         );
         return StationListItem(
@@ -214,7 +214,7 @@ class _SearchResultsView extends ConsumerWidget {
           }
           final station = stations[index];
           final isPlaying = playerState.maybeWhen(
-            active: (s, _, __, ___, ____) => s.id == station.id,
+            active: (s, playing, _, __, ___) => s.id == station.id && playing,
             orElse: () => false,
           );
           return StationListItem(
