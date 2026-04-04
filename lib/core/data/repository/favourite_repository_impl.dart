@@ -28,6 +28,24 @@ class FavouriteRepositoryImpl implements FavouriteRepository {
   }
 
   @override
+  Future<List<Station>> getFavourites() async {
+    final rows = await _database.favouriteDao.watchFavouriteStations().first;
+    return rows
+        .map(
+          (row) => Station(
+            id: row.id,
+            name: row.name,
+            streamUrl: row.streamUrl,
+            logoUrl: row.logoUrl,
+            groupId: row.groupId,
+            isFeatured: row.isFeatured,
+            isFavourite: true,
+          ),
+        )
+        .toList();
+  }
+
+  @override
   Stream<bool> watchIsFavourite(int stationId) {
     return _database.favouriteDao.watchIsFavourite(stationId);
   }

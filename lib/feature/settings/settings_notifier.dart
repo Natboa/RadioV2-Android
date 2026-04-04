@@ -2,24 +2,33 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../core/data/repository/favourite_repository.dart';
 import '../../core/data/repository/station_repository.dart';
+import '../../core/database/app_database.dart';
 import '../../core/providers.dart';
 import 'settings_state.dart';
 
 class SettingsNotifier extends StateNotifier<SettingsUiState> {
   final StationRepository _stationRepo;
   final FavouriteRepository _favRepo;
+  final AppDatabase _db;
 
-  SettingsNotifier(this._stationRepo, this._favRepo)
+  SettingsNotifier(this._stationRepo, this._favRepo, this._db)
       : super(const SettingsIdle());
+
+  void reset() => state = const SettingsIdle();
+
+  // ── Import ──────────────────────────────────────────────────────────────
 
   Future<void> importFavourites() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['m3u', 'm3u8', 'json'],
     );
-    if (result == null) return; // user cancelled
+    if (result == null) return;
 
     state = const SettingsImporting();
     try {
@@ -52,7 +61,112 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
     }
   }
 
-  void reset() => state = const SettingsIdle();
+  // ── Export ──────────────────────────────────────────────────────────────
+
+  Future<void> exportFavourites(String format) async {
+    state = const SettingsExporting();
+    try {
+      final stations = await _favRepo.getFavourites();
+      if (stations.isEmpty) {
+        state = const SettingsExportError('No favourites to export.');
+        return;
+      }
+
+      // Build groupId → groupName map (one lookup per unique groupId)
+      final groupNames = <int, String>{};
+      for (final s in stations) {
+        if (!groupNames.containsKey(s.groupId)) {
+          final group = await _db.groupDao.getGroupById(s.groupId);
+          groupNames[s.groupId] = group?.name ?? 'Unknown';
+        }
+      }
+
+      final content = format == 'json'
+          ? _buildJson(stations, groupNames)
+          : _buildM3U(stations, groupNames);
+
+      final ext = format == 'json' ? 'json' : 'm3u';
+      final fileName = 'radiov2_favourites.$ext';
+      final tempDir = await getTemporaryDirectory();
+      final file = File(p.join(tempDir.path, fileName));
+      await file.writeAsString(content, encoding: utf8);
+
+      await Share.shareXFiles(
+        [
+          XFile(
+            file.path,
+            mimeType: format == 'json'
+                ? 'application/json'
+                : 'audio/x-mpegurl',
+            name: fileName,
+          ),
+        ],
+        subject: 'RadioV2 Favourites',
+      );
+
+      state = const SettingsExportDone();
+    } catch (e) {
+      state = SettingsExportError('Export failed: $e');
+    }
+  }
+
+  // ── JSON ────────────────────────────────────────────────────────────────
+
+  String _buildJson(
+    List<dynamic> stations,
+    Map<int, String> groupNames,
+  ) {
+    final encoder = JsonEncoder.withIndent('  ');
+    final payload = {
+      'version': 1,
+      'exported': DateTime.now().toUtc().toIso8601String(),
+      'favourites': [
+        for (final s in stations)
+          {
+            'name': s.name,
+            'streamUrl': s.streamUrl,
+            if (s.logoUrl != null) 'logoUrl': s.logoUrl,
+            'group': groupNames[s.groupId] ?? '',
+          },
+      ],
+    };
+    return encoder.convert(payload);
+  }
+
+  List<String> _parseJson(String content) {
+    final urls = <String>[];
+    try {
+      final decoded = jsonDecode(content);
+      // Desktop format: { "version": 1, "favourites": [...] }
+      // Plain array: [...]
+      final list = decoded is Map ? decoded['favourites'] : decoded;
+      if (list is! List) return urls;
+      for (final item in list) {
+        if (item is Map<String, dynamic>) {
+          final url = item['streamUrl'] ??
+              item['StreamUrl'] ??
+              item['url'] ??
+              item['stream_url'];
+          if (url is String && url.isNotEmpty) urls.add(url);
+        }
+      }
+    } catch (_) {}
+    return urls;
+  }
+
+  // ── M3U ─────────────────────────────────────────────────────────────────
+
+  String _buildM3U(List<dynamic> stations, Map<int, String> groupNames) {
+    final sb = StringBuffer();
+    sb.writeln('#EXTM3U');
+    for (final s in stations) {
+      final logo = s.logoUrl != null ? ' tvg-logo="${s.logoUrl}"' : '';
+      final group = groupNames[s.groupId] ?? 'Uncategorized';
+      sb.writeln('#EXTINF:-1$logo group-title="$group",${s.name}');
+      sb.writeln(s.streamUrl);
+    }
+    return sb.toString();
+  }
 
   List<String> _parseM3U(String content) {
     final urls = <String>[];
@@ -70,24 +184,6 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
     }
     return urls;
   }
-
-  List<String> _parseJson(String content) {
-    final urls = <String>[];
-    try {
-      final list = jsonDecode(content);
-      if (list is! List) return urls;
-      for (final item in list) {
-        if (item is Map<String, dynamic>) {
-          final url = item['streamUrl'] ??
-              item['StreamUrl'] ??
-              item['url'] ??
-              item['stream_url'];
-          if (url is String && url.isNotEmpty) urls.add(url);
-        }
-      }
-    } catch (_) {}
-    return urls;
-  }
 }
 
 final settingsNotifierProvider =
@@ -95,5 +191,6 @@ final settingsNotifierProvider =
   return SettingsNotifier(
     ref.watch(stationRepositoryProvider),
     ref.watch(favouriteRepositoryProvider),
+    ref.watch(appDatabaseProvider).requireValue,
   );
 });
