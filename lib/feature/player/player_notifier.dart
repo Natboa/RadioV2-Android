@@ -162,12 +162,6 @@ final playerNotifierProvider =
   return PlayerNotifier(
     ref.watch(audioHandlerProvider),
     ref.watch(favouriteRepositoryProvider),
-    (station) {
-      final current = ref.read(recentlyVisitedProvider);
-      ref.read(recentlyVisitedProvider.notifier).state = [
-        station,
-        ...current.where((s) => s.id != station.id),
-      ].take(50).toList();
-    },
+    (station) => ref.read(recentlyVisitedProvider.notifier).visit(station),
   );
 });
