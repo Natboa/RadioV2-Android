@@ -14,7 +14,7 @@ Future<void> main() async {
       androidNotificationChannelId: 'com.radiov2.radiov2_android.audio',
       androidNotificationChannelName: 'RadioV2 Playback',
       androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
+      androidStopForegroundOnPause: false,
     ),
   );
 
