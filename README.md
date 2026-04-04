@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/built%20with-Flutter-54C5F8?style=flat-square&logo=flutter&logoColor=white" alt="Flutter"/>
 </p>
 
-<h3 align="center">A modern Android internet radio player with a Spotify-inspired dark UI.</h3>
+<h3 align="center">A modern Android internet radio player with a clean dark UI.</h3>
 
 <!-- Screenshots go here -->
 
