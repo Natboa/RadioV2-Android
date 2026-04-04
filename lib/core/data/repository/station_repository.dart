@@ -19,4 +19,7 @@ abstract interface class StationRepository {
   Future<List<Group>> getGroupsWithCountByCategory(int categoryId);
 
   Future<List<CategoryWithGroups>> getAllCategoriesWithGroups();
+
+  /// Returns a map of streamUrl → stationId for all matching URLs found in the DB.
+  Future<Map<String, int>> getStationIdsByStreamUrls(List<String> urls);
 }

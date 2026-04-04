@@ -14,6 +14,7 @@ class AppRoutes {
   static const discover = '/discover';
   static const favourites = '/favourites';
   static const groupDetail = '/discover/group/:groupId';
+  static const settings = '/settings';
 
   static String groupDetailPath(int groupId) =>
       '/discover/group/$groupId';

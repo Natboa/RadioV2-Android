@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/model/station.dart';
 import '../../core/providers.dart';
 import '../../core/ui/widgets/station_list_item.dart';
 import '../../core/designsystem/colors.dart';
+import '../../navigation/app_destinations.dart';
 import '../player/player_notifier.dart';
 import '../player/player_state.dart';
 import 'browse_notifier.dart';
@@ -49,6 +51,12 @@ class _BrowseScreenState extends ConsumerState<BrowseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Browse'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(

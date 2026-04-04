@@ -64,4 +64,13 @@ class StationDao extends DatabaseAccessor<AppDatabase>
   Future<Station?> getStationById(int id) {
     return (select(stations)..where((s) => s.id.equals(id))).getSingleOrNull();
   }
+
+  /// Returns a map of streamUrl → stationId for all URLs that exist in the DB.
+  Future<Map<String, int>> getStationIdsByStreamUrls(List<String> urls) async {
+    if (urls.isEmpty) return {};
+    final rows = await (select(stations)
+          ..where((s) => s.streamUrl.isIn(urls)))
+        .get();
+    return {for (final r in rows) r.streamUrl: r.id};
+  }
 }

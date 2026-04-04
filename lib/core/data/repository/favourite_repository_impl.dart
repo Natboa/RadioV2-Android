@@ -41,4 +41,8 @@ class FavouriteRepositoryImpl implements FavouriteRepository {
       await _database.favouriteDao.addFavourite(stationId);
     }
   }
+
+  @override
+  Future<void> addFavourite(int stationId) =>
+      _database.favouriteDao.addFavourite(stationId);
 }

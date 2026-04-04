@@ -95,6 +95,10 @@ class StationRepositoryImpl implements StationRepository {
     ];
   }
 
+  @override
+  Future<Map<String, int>> getStationIdsByStreamUrls(List<String> urls) =>
+      _db.stationDao.getStationIdsByStreamUrls(urls);
+
   Station _mapStation(db.Station row) => Station(
     id: row.id,
     name: row.name,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/ui/widgets/station_list_item.dart';
 import '../../core/designsystem/colors.dart';
+import '../../navigation/app_destinations.dart';
 import '../player/player_notifier.dart';
 import 'favourites_notifier.dart';
 import 'favourites_state.dart';
@@ -15,7 +17,15 @@ class FavouritesScreen extends ConsumerWidget {
     final playerState = ref.watch(playerNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favourites')),
+      appBar: AppBar(
+        title: const Text('Favourites'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
+      ),
       body: switch (state) {
         FavouritesLoading() =>
           const Center(child: CircularProgressIndicator()),

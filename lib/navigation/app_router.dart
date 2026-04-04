@@ -10,11 +10,16 @@ import '../feature/player/player_state.dart';
 import '../feature/discover/discover_screen.dart';
 import '../feature/discover/group_detail/group_detail_screen.dart';
 import '../feature/favourites/favourites_screen.dart';
+import '../feature/settings/settings_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.favourites,
     routes: [
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppScaffold(shell: shell),
         branches: [
