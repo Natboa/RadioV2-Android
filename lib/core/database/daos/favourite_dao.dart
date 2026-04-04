@@ -27,8 +27,9 @@ class FavouriteDao extends DatabaseAccessor<AppDatabase>
   }
 
   Future<void> addFavourite(int stationId) async {
-    await into(favourites).insertOnConflictUpdate(
+    await into(favourites).insert(
       FavouritesCompanion.insert(stationId: stationId),
+      mode: InsertMode.insertOrIgnore,
     );
   }
 

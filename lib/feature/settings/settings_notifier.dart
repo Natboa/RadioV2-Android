@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +25,7 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
   Future<void> importFavourites() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['m3u', 'm3u8', 'json'],
+      allowedExtensions: ['m3u', 'm3u8'],
     );
     if (result == null) return;
 
@@ -39,9 +38,7 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
       }
 
       final content = await File(path).readAsString();
-      final ext = result.files.single.extension?.toLowerCase() ?? '';
-
-      final urls = ext == 'json' ? _parseJson(content) : _parseM3U(content);
+      final urls = _parseM3U(content);
 
       if (urls.isEmpty) {
         state = const SettingsImportError('No stations found in the file.');
@@ -63,7 +60,7 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
 
   // ── Export ──────────────────────────────────────────────────────────────
 
-  Future<void> exportFavourites(String format) async {
+  Future<void> exportFavourites() async {
     state = const SettingsExporting();
     try {
       final stations = await _favRepo.getFavourites();
@@ -81,26 +78,13 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
         }
       }
 
-      final content = format == 'json'
-          ? _buildJson(stations, groupNames)
-          : _buildM3U(stations, groupNames);
-
-      final ext = format == 'json' ? 'json' : 'm3u';
-      final fileName = 'radiov2_favourites.$ext';
+      const fileName = 'radiov2_favourites.m3u';
       final tempDir = await getTemporaryDirectory();
       final file = File(p.join(tempDir.path, fileName));
-      await file.writeAsString(content, encoding: utf8);
+      await file.writeAsString(_buildM3U(stations, groupNames), encoding: utf8);
 
       await Share.shareXFiles(
-        [
-          XFile(
-            file.path,
-            mimeType: format == 'json'
-                ? 'application/json'
-                : 'audio/x-mpegurl',
-            name: fileName,
-          ),
-        ],
+        [XFile(file.path, mimeType: 'audio/x-mpegurl', name: fileName)],
         subject: 'RadioV2 Favourites',
       );
 
@@ -108,50 +92,6 @@ class SettingsNotifier extends StateNotifier<SettingsUiState> {
     } catch (e) {
       state = SettingsExportError('Export failed: $e');
     }
-  }
-
-  // ── JSON ────────────────────────────────────────────────────────────────
-
-  String _buildJson(
-    List<dynamic> stations,
-    Map<int, String> groupNames,
-  ) {
-    final encoder = JsonEncoder.withIndent('  ');
-    final payload = {
-      'version': 1,
-      'exported': DateTime.now().toUtc().toIso8601String(),
-      'favourites': [
-        for (final s in stations)
-          {
-            'name': s.name,
-            'streamUrl': s.streamUrl,
-            if (s.logoUrl != null) 'logoUrl': s.logoUrl,
-            'group': groupNames[s.groupId] ?? '',
-          },
-      ],
-    };
-    return encoder.convert(payload);
-  }
-
-  List<String> _parseJson(String content) {
-    final urls = <String>[];
-    try {
-      final decoded = jsonDecode(content);
-      // Desktop format: { "version": 1, "favourites": [...] }
-      // Plain array: [...]
-      final list = decoded is Map ? decoded['favourites'] : decoded;
-      if (list is! List) return urls;
-      for (final item in list) {
-        if (item is Map<String, dynamic>) {
-          final url = item['streamUrl'] ??
-              item['StreamUrl'] ??
-              item['url'] ??
-              item['stream_url'];
-          if (url is String && url.isNotEmpty) urls.add(url);
-        }
-      }
-    } catch (_) {}
-    return urls;
   }
 
   // ── M3U ─────────────────────────────────────────────────────────────────

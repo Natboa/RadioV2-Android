@@ -31,7 +31,7 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.file_open_outlined),
             title: const Text('Import favourites'),
-            subtitle: const Text('M3U, M3U8, or JSON'),
+            subtitle: const Text('M3U or M3U8 playlist'),
             trailing: state is SettingsImporting
                 ? const _Spinner()
                 : null,
@@ -50,12 +50,12 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.ios_share_outlined),
             title: const Text('Export favourites'),
-            subtitle: const Text('Save as M3U or JSON'),
+            subtitle: const Text('Share as M3U playlist'),
             trailing: state is SettingsExporting
                 ? const _Spinner()
                 : null,
             enabled: !isBusy,
-            onTap: () => _showExportDialog(context, ref),
+            onTap: () => _runExport(context, ref),
           ),
 
           const Divider(height: 32),
@@ -105,54 +105,9 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showExportDialog(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'Export as',
-                style: ctx.textTheme.titleMedium,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.queue_music_outlined),
-              title: const Text('M3U playlist'),
-              subtitle: const Text('Compatible with most media players'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _runExport(context, ref, 'm3u');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.data_object),
-              title: const Text('JSON'),
-              subtitle: const Text('Compatible with RadioV2 Desktop'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _runExport(context, ref, 'json');
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _runExport(
-    BuildContext context,
-    WidgetRef ref,
-    String format,
-  ) async {
+  Future<void> _runExport(BuildContext context, WidgetRef ref) async {
     ref.read(settingsNotifierProvider.notifier).reset();
-    await ref
-        .read(settingsNotifierProvider.notifier)
-        .exportFavourites(format);
+    await ref.read(settingsNotifierProvider.notifier).exportFavourites();
     if (!context.mounted) return;
     final state = ref.read(settingsNotifierProvider);
     if (state is SettingsExportError) {
