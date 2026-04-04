@@ -205,7 +205,8 @@ class _CategoriesList extends StatelessWidget {
               ),
             ),
           ],
-        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        // Extra bottom padding so the last row scrolls clear of the mini player (72px)
+        const SliverToBoxAdapter(child: SizedBox(height: 88)),
       ],
     );
   }

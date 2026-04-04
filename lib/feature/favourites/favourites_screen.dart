@@ -57,6 +57,7 @@ class FavouritesScreen extends ConsumerWidget {
           ),
         ),
         FavouritesSuccess(:final stations) => ListView.builder(
+          padding: const EdgeInsets.only(bottom: 88),
           itemCount: stations.length,
           itemBuilder: (context, index) {
             final station = stations[index];

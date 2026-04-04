@@ -143,6 +143,7 @@ class _RecentlyVisitedView extends ConsumerWidget {
 
     return ListView.builder(
       controller: scrollController,
+      padding: const EdgeInsets.only(bottom: 88),
       itemCount: stations.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -202,6 +203,7 @@ class _SearchResultsView extends ConsumerWidget {
       ),
       BrowseSuccess(:final stations, :final hasMore) => ListView.builder(
         controller: scrollController,
+        padding: const EdgeInsets.only(bottom: 88),
         itemCount: stations.length + (hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == stations.length) {

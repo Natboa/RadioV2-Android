@@ -62,6 +62,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
 
     return ListView.builder(
       controller: _scrollController,
+      padding: const EdgeInsets.only(bottom: 88),
       itemCount: totalItems,
       itemBuilder: (context, index) {
         // "Featured" header
