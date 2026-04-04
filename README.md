@@ -10,6 +10,12 @@
 
 <h3 align="center">A modern Android internet radio player with a clean dark UI.</h3>
 
+<p align="center">
+  <a href="https://github.com/Natboa/RadioV2/releases">
+    <img src="https://img.shields.io/badge/Also%20available%20on-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Available on Windows"/>
+  </a>
+</p>
+
 <!-- Screenshots go here -->
 
 ## Overview
