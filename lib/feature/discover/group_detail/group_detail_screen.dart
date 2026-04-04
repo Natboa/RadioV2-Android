@@ -19,6 +19,7 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
 
 class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -46,19 +48,33 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     required List<Station> featured,
     required List<Station> stations,
     required bool hasMore,
+    required bool isSearching,
     required PlayerUiState playerState,
   }) {
-    final hasFeatured = featured.isNotEmpty;
-    // Layout: [featured header?] [featured items...] [divider?] [stations...] [loader?]
+    // When searching, skip the featured section entirely
+    final effectiveFeatured = isSearching ? <Station>[] : featured;
+    final hasFeatured = effectiveFeatured.isNotEmpty;
+
     final headerOffset = hasFeatured ? 1 : 0;
     final dividerOffset = hasFeatured ? 1 : 0;
     final totalItems =
         headerOffset +
-        featured.length +
+        effectiveFeatured.length +
         dividerOffset +
         stations.length +
         (hasMore ? 1 : 0);
-    final playlist = [...featured, ...stations];
+    final playlist = [...effectiveFeatured, ...stations];
+
+    if (stations.isEmpty && !hasMore && !hasFeatured) {
+      return Center(
+        child: Text(
+          isSearching ? 'No stations match your search' : 'No stations',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: RadioV2Colors.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
 
     return ListView.builder(
       controller: _scrollController,
@@ -79,14 +95,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         }
 
         // Featured stations
-        if (hasFeatured && index < headerOffset + featured.length) {
-          final station = featured[index - headerOffset];
+        if (hasFeatured && index < headerOffset + effectiveFeatured.length) {
+          final station = effectiveFeatured[index - headerOffset];
+          final isSelected = playerState.maybeWhen(
+            active: (s, _, __, ___, ____) => s.id == station.id,
+            orElse: () => false,
+          );
           final isPlaying = playerState.maybeWhen(
             active: (s, playing, _, __, ___) => s.id == station.id && playing,
             orElse: () => false,
           );
           return StationListItem(
             station: station,
+            isSelected: isSelected,
             isPlaying: isPlaying,
             onTap: () => ref
                 .read(playerNotifierProvider.notifier)
@@ -98,7 +119,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         }
 
         // Divider between featured and rest
-        if (hasFeatured && index == headerOffset + featured.length) {
+        if (hasFeatured && index == headerOffset + effectiveFeatured.length) {
           return const Divider(
             color: RadioV2Colors.divider,
             thickness: 1,
@@ -107,7 +128,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         }
 
         final stationIndex =
-            index - headerOffset - featured.length - dividerOffset;
+            index - headerOffset - effectiveFeatured.length - dividerOffset;
 
         if (stationIndex == stations.length) {
           return const Padding(
@@ -117,12 +138,17 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         }
 
         final station = stations[stationIndex];
+        final isSelected = playerState.maybeWhen(
+          active: (s, _, __, ___, ____) => s.id == station.id,
+          orElse: () => false,
+        );
         final isPlaying = playerState.maybeWhen(
           active: (s, playing, _, __, ___) => s.id == station.id && playing,
           orElse: () => false,
         );
         return StationListItem(
           station: station,
+          isSelected: isSelected,
           isPlaying: isPlaying,
           onTap: () => ref
               .read(playerNotifierProvider.notifier)
@@ -144,6 +170,26 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       appBar: AppBar(
         title: Text(
           state is GroupDetailSuccess ? state.groupName : 'Loading…',
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: 'Search stations…',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (q) {
+                ref
+                    .read(
+                      groupDetailNotifierProvider(widget.groupId).notifier,
+                    )
+                    .onSearch(q);
+              },
+            ),
+          ),
         ),
       ),
       body: switch (state) {
@@ -176,12 +222,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           :final featured,
           :final stations,
           :final hasMore,
+          :final searchQuery,
         ) =>
           _buildList(
             context,
             featured: featured,
             stations: stations,
             hasMore: hasMore,
+            isSearching: searchQuery.isNotEmpty,
             playerState: playerState,
           ),
       },

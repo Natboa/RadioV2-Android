@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/data/repository/station_repository.dart';
 import '../../../core/database/app_database.dart';
@@ -11,10 +12,24 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
   final AppDatabase _db;
   final int groupId;
   bool _isLoadingMore = false;
+  Timer? _debounce;
 
   GroupDetailNotifier(this._repo, this._db, this.groupId)
       : super(const GroupDetailLoading()) {
     _load();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void onSearch(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _loadWithQuery(query);
+    });
   }
 
   Future<void> loadMore() async {
@@ -24,10 +39,12 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
     }
     _isLoadingMore = true;
     try {
+      final query = current.searchQuery.isEmpty ? null : current.searchQuery;
       final more = await _repo.getStationsByGroup(
         groupId,
         current.stations.length,
         _pageSize,
+        query: query,
       );
       state = current.copyWith(
         stations: [...current.stations, ...more],
@@ -39,6 +56,27 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
   }
 
   Future<void> retry() => _load();
+
+  Future<void> _loadWithQuery(String query) async {
+    final current = state;
+    if (current is! GroupDetailSuccess) return;
+    final dbQuery = query.isEmpty ? null : query;
+    try {
+      final stations = await _repo.getStationsByGroup(
+        groupId,
+        0,
+        _pageSize,
+        query: dbQuery,
+      );
+      state = current.copyWith(
+        searchQuery: query,
+        stations: stations,
+        hasMore: stations.length == _pageSize,
+      );
+    } catch (e) {
+      state = GroupDetailError(e.toString());
+    }
+  }
 
   Future<void> _load() async {
     state = const GroupDetailLoading();

@@ -7,17 +7,17 @@ class DatabaseInitializer {
   static const _dbAssetPath = 'assets/database/stations.db';
   static const _dbFileName = 'stations.db';
 
-  /// Returns the database file, copying from assets on first launch.
-  static Future<File> getOrCopyDatabase() async {
+  /// Returns the database file and whether this is a fresh install.
+  /// Copying from assets happens only when the file doesn't exist yet.
+  static Future<(File, bool)> getOrCopyDatabase() async {
     final docsDir = await getApplicationDocumentsDirectory();
     final dbFile = File(p.join(docsDir.path, _dbFileName));
 
-    if (!dbFile.existsSync()) {
-      final data = await rootBundle.load(_dbAssetPath);
-      final bytes = data.buffer.asUint8List();
-      await dbFile.writeAsBytes(bytes, flush: true);
-    }
+    if (dbFile.existsSync()) return (dbFile, false);
 
-    return dbFile;
+    final data = await rootBundle.load(_dbAssetPath);
+    final bytes = data.buffer.asUint8List();
+    await dbFile.writeAsBytes(bytes, flush: true);
+    return (dbFile, true);
   }
 }

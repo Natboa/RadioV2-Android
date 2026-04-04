@@ -7,11 +7,16 @@ import 'data/repository/favourite_repository.dart';
 import 'data/repository/favourite_repository_impl.dart';
 import 'model/station.dart';
 
-/// Async provider — copies the 79MB DB on first launch in the background,
-/// after runApp() has already shown the UI.
+/// Async provider — copies the bundled DB on first launch.
+/// On a fresh install, clears any developer favourites baked into the asset DB.
 final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
-  final dbFile = await DatabaseInitializer.getOrCopyDatabase();
-  return AppDatabase(dbFile);
+  final (dbFile, isFreshInstall) =
+      await DatabaseInitializer.getOrCopyDatabase();
+  final db = AppDatabase(dbFile);
+  if (isFreshInstall) {
+    await db.customStatement('DELETE FROM favourites');
+  }
+  return db;
 });
 
 final stationRepositoryProvider = Provider<StationRepository>((ref) {

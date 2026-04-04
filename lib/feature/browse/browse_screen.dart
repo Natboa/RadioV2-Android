@@ -156,12 +156,17 @@ class _RecentlyVisitedView extends ConsumerWidget {
           );
         }
         final station = stations[index - 1];
+        final isSelected = playerState.maybeWhen(
+          active: (s, _, __, ___, ____) => s.id == station.id,
+          orElse: () => false,
+        );
         final isPlaying = playerState.maybeWhen(
           active: (s, playing, _, __, ___) => s.id == station.id && playing,
           orElse: () => false,
         );
         return StationListItem(
           station: station,
+          isSelected: isSelected,
           isPlaying: isPlaying,
           onTap: () => onTap(station),
           onFavouriteTap: () => onFavouriteTap(station.id),
@@ -213,12 +218,17 @@ class _SearchResultsView extends ConsumerWidget {
             );
           }
           final station = stations[index];
+          final isSelected = playerState.maybeWhen(
+            active: (s, _, __, ___, ____) => s.id == station.id,
+            orElse: () => false,
+          );
           final isPlaying = playerState.maybeWhen(
             active: (s, playing, _, __, ___) => s.id == station.id && playing,
             orElse: () => false,
           );
           return StationListItem(
             station: station,
+            isSelected: isSelected,
             isPlaying: isPlaying,
             onTap: () => onTap(station, stations),
             onFavouriteTap: () => onFavouriteTap(station.id),

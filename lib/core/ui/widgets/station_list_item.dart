@@ -14,6 +14,7 @@ final _isFavouriteProvider =
 
 class StationListItem extends ConsumerWidget {
   final Station station;
+  final bool isSelected;
   final bool isPlaying;
   final VoidCallback onTap;
   final VoidCallback onFavouriteTap;
@@ -21,6 +22,7 @@ class StationListItem extends ConsumerWidget {
   const StationListItem({
     super.key,
     required this.station,
+    required this.isSelected,
     required this.isPlaying,
     required this.onTap,
     required this.onFavouriteTap,
@@ -40,7 +42,7 @@ class StationListItem extends ConsumerWidget {
             child: Text(
               station.name,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: isPlaying ? RadioV2Colors.accent : null,
+                color: isSelected ? RadioV2Colors.accent : null,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

@@ -61,12 +61,17 @@ class FavouritesScreen extends ConsumerWidget {
           itemCount: stations.length,
           itemBuilder: (context, index) {
             final station = stations[index];
+            final isSelected = playerState.maybeWhen(
+              active: (s, _, __, ___, ____) => s.id == station.id,
+              orElse: () => false,
+            );
             final isPlaying = playerState.maybeWhen(
               active: (s, playing, _, __, ___) => s.id == station.id && playing,
               orElse: () => false,
             );
             return StationListItem(
               station: station,
+              isSelected: isSelected,
               isPlaying: isPlaying,
               onTap: () => ref
                   .read(playerNotifierProvider.notifier)

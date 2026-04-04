@@ -12,7 +12,7 @@ class GroupCard extends StatelessWidget {
     super.key,
     required this.group,
     required this.onTap,
-    this.size = 160,
+    this.size = 136,
   });
 
   @override

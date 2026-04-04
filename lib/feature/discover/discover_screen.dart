@@ -183,7 +183,7 @@ class _CategoriesList extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 230, // image(160) + gap(6) + two text lines(~14+12) + v-pad(8*2)
+                height: 196, // image(136) + gap(6) + two text lines(~14+12) + v-pad(8*2)
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding:
