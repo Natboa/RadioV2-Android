@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/audio_service_handler.dart';
 import '../../core/data/repository/favourite_repository.dart';
@@ -17,11 +18,14 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   StreamSubscription? _metaSub;
   StreamSubscription? _connectivitySub;
   StreamSubscription? _favSub;
+  StreamSubscription? _skipNextSub;
+  StreamSubscription? _skipPrevSub;
 
   PlayerNotifier(this._handler, this._favouriteRepo, this._onStationVisited)
       : super(const PlayerUiState()) {
     _listenPlayback();
     _listenConnectivity();
+    _listenSkips();
   }
 
   void _listenPlayback() {
@@ -39,6 +43,11 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
     _metaSub = _handler.icyMetadataStream.listen((text) {
       state = state.copyWith(nowPlayingText: text);
     });
+  }
+
+  void _listenSkips() {
+    _skipNextSub = _handler.skipToNextStream.listen((_) => nextStation());
+    _skipPrevSub = _handler.skipToPreviousStream.listen((_) => previousStation());
   }
 
   void _listenConnectivity() {
@@ -72,7 +81,31 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
       state = state.copyWith(isFavourite: isFav);
     });
 
+    // Set notification immediately so it appears as soon as playback starts
+    _handler.updateNowPlaying(
+      id: station.streamUrl,
+      title: station.name,
+      artUrl: station.logoUrl,
+    );
     await _handler.playUrl(station.streamUrl);
+
+    // Upgrade artwork to a local file:// URI once cached — audio_service
+    // loads file:// URIs reliably as the notification large icon / background
+    if (station.logoUrl != null) {
+      DefaultCacheManager()
+          .getSingleFile(station.logoUrl!)
+          .then((file) {
+            // Only update if this station is still playing
+            if (state.station?.id == station.id) {
+              _handler.updateNowPlaying(
+                id: station.streamUrl,
+                title: station.name,
+                artUrl: file.uri.toString(),
+              );
+            }
+          })
+          .catchError((_) {});
+    }
   }
 
   Future<void> playPause() async {
@@ -118,6 +151,8 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
     _metaSub?.cancel();
     _connectivitySub?.cancel();
     _favSub?.cancel();
+    _skipNextSub?.cancel();
+    _skipPrevSub?.cancel();
     super.dispose();
   }
 }
