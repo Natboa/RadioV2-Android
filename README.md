@@ -39,19 +39,6 @@ Download the latest release APK and install it on your Android device (Android 8
 
 > Enable *Install from unknown sources* in your device settings if prompted.
 
-**Option 2 — Build from source**
-
-**Prerequisites:** Flutter 3.22+, Android SDK (min API 26).
-
-```bash
-git clone https://github.com/Natboa/RadioV2-Android.git
-cd "RadioV2 Android"
-flutter pub get
-flutter run                   # debug on connected device
-flutter build apk --release   # release APK
-```
-
-The release APK will be at `build/app/outputs/apk/release/app-release.apk`.
 
 ## Tech Stack
 
