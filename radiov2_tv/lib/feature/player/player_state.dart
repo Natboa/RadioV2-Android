@@ -1,0 +1,45 @@
+import 'package:flutter/foundation.dart';
+import '../../core/model/station.dart';
+
+@immutable
+class PlayerUiState {
+  final Station? station;
+  final List<Station> playlist;
+  final bool isPlaying;
+  final bool isBuffering;
+  final bool isError;
+  final String? nowPlayingText;
+  final bool isFavourite;
+
+  const PlayerUiState({
+    this.station,
+    this.playlist = const [],
+    this.isPlaying = false,
+    this.isBuffering = false,
+    this.isError = false,
+    this.nowPlayingText,
+    this.isFavourite = false,
+  });
+
+  bool get isIdle => station == null;
+
+  PlayerUiState copyWith({
+    Station? station,
+    List<Station>? playlist,
+    bool? isPlaying,
+    bool? isBuffering,
+    bool? isError,
+    String? nowPlayingText,
+    bool? isFavourite,
+  }) {
+    return PlayerUiState(
+      station: station ?? this.station,
+      playlist: playlist ?? this.playlist,
+      isPlaying: isPlaying ?? this.isPlaying,
+      isBuffering: isBuffering ?? this.isBuffering,
+      isError: isError ?? this.isError,
+      nowPlayingText: nowPlayingText ?? this.nowPlayingText,
+      isFavourite: isFavourite ?? this.isFavourite,
+    );
+  }
+}
