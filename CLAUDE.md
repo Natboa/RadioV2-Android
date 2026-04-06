@@ -62,3 +62,4 @@ Then restart Claude Code. Search past context with `/mem-search <query>`.
 - Dark theme only — no system theme switching
 - Pagination page size: 50 for Browse, 30 for Group Detail
 - Search debounce: 300ms
+

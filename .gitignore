@@ -21,3 +21,5 @@ android/app/profile/
 android/app/release/
 
 # Generated Drift/Riverpod files (keep .g.dart for now, they're needed)
+
+docs/
