@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version"/>
+  <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/version-1.0.1-blue?style=flat-square" alt="Version"/></a>
   <img src="https://img.shields.io/badge/platform-Android%208%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Platform"/>
   <img src="https://img.shields.io/badge/built%20with-Flutter-54C5F8?style=flat-square&logo=flutter&logoColor=white" alt="Flutter"/>
 </p>
@@ -16,7 +16,14 @@
   </a>
 </p>
 
-<!-- Screenshots go here -->
+<table align="center">
+  <tr>
+    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05.jpg" alt="Screenshot 1" width="180"/></td>
+    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05%20(2).jpg" alt="Screenshot 2" width="180"/></td>
+    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05%20(3).jpg" alt="Screenshot 3" width="180"/></td>
+    <td><img src="assets/images/screenshots/photo_2026-04-05_11-09-16.jpg" alt="Screenshot 4" width="180"/></td>
+  </tr>
+</table>
 
 ## Overview
 
