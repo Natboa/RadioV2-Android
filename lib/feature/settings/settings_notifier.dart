@@ -132,6 +132,6 @@ final settingsNotifierProvider =
   return SettingsNotifier(
     ref.watch(stationRepositoryProvider),
     ref.watch(favouriteRepositoryProvider),
-    ref.watch(appDatabaseProvider).requireValue,
+    ref.watch(appDatabaseProvider),
   );
 });

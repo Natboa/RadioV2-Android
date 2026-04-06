@@ -152,6 +152,3 @@ class _Spinner extends StatelessWidget {
       );
 }
 
-extension on BuildContext {
-  TextTheme get textTheme => Theme.of(this).textTheme;
-}

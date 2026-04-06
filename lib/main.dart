@@ -5,14 +5,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/audio/audio_service_handler.dart';
 import 'core/providers.dart';
+import 'core/database/app_database.dart';
+import 'core/data/datasource/database_initializer.dart';
+import 'core/data/repository/station_repository_impl.dart';
+
+import 'core/data/repository/favourite_repository_impl.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Both are fast (~ms) — safe to await before runApp
+  // Initialize dependencies
+  final (dbFile, isFreshInstall) = await DatabaseInitializer.getOrCopyDatabase();
+  final db = AppDatabase(dbFile);
+  if (isFreshInstall) {
+    await db.customStatement('DELETE FROM favourites');
+  }
+
+  final stationRepo = StationRepositoryImpl(db);
+  final favouriteRepo = FavouriteRepositoryImpl(db);
+
   final results = await Future.wait([
     AudioService.init(
-      builder: () => RadioAudioHandler(),
+      builder: () => RadioAudioHandler(
+        repository: stationRepo,
+        favouriteRepository: favouriteRepo,
+      ),
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.radiov2.radiov2_android.audio',
         androidNotificationChannelName: 'RadioV2 Playback',
@@ -25,10 +42,10 @@ Future<void> main() async {
   final audioHandler = results[0] as RadioAudioHandler;
   final prefs = results[1] as SharedPreferences;
 
-  // runApp immediately — DB copy happens lazily via FutureProvider
   runApp(
     ProviderScope(
       overrides: [
+        appDatabaseProvider.overrideWithValue(db),
         audioHandlerProvider.overrideWithValue(audioHandler),
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],

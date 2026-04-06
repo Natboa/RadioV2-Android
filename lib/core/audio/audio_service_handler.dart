@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../data/repository/station_repository.dart';
+import '../data/repository/favourite_repository.dart';
+import '../model/station.dart';
+
 // Provided via ProviderScope override in main.dart
 final audioHandlerProvider = Provider<RadioAudioHandler>((ref) {
   throw UnimplementedError('audioHandlerProvider must be overridden in main');
@@ -11,6 +15,8 @@ final audioHandlerProvider = Provider<RadioAudioHandler>((ref) {
 
 class RadioAudioHandler extends BaseAudioHandler {
   final AudioPlayer _player = AudioPlayer();
+  final StationRepository _stationRepo;
+  final FavouriteRepository _favouriteRepo;
 
   // Track last broadcast values to avoid redundant notification redraws
   ProcessingState? _lastProcessingState;
@@ -26,7 +32,11 @@ class RadioAudioHandler extends BaseAudioHandler {
   /// Emits when the lock-screen/notification previous button is tapped
   final PublishSubject<void> skipToPreviousStream = PublishSubject();
 
-  RadioAudioHandler() {
+  RadioAudioHandler({
+    required StationRepository repository,
+    required FavouriteRepository favouriteRepository,
+  })  : _stationRepo = repository,
+        _favouriteRepo = favouriteRepository {
     _player.playbackEventStream.listen(_broadcastPlaybackState);
     _initAudioSession();
   }
@@ -140,6 +150,72 @@ class RadioAudioHandler extends BaseAudioHandler {
     }
   }
 
+  // --- Android Auto Media Browser Setup ---
+
+  MediaItem _stationToMediaItem(Station station) {
+    return MediaItem(
+      id: station.id.toString(),
+      title: station.name,
+      album: 'RadioV2',
+      artUri: station.logoUrl != null ? Uri.tryParse(station.logoUrl!) : null,
+      playable: true,
+      extras: {'streamUrl': station.streamUrl},
+    );
+  }
+
+  @override
+  Future<List<MediaItem>> getChildren(
+    String parentMediaId, [
+    Map<String, dynamic>? options,
+  ]) async {
+    switch (parentMediaId) {
+      case AudioService.browsableRootId:
+        return [
+          const MediaItem(
+            id: 'favourites',
+            title: 'Favourites',
+            playable: false,
+          ),
+          const MediaItem(
+            id: 'all_stations',
+            title: 'All Stations',
+            playable: false,
+          ),
+        ];
+      case 'favourites':
+        final list = await _favouriteRepo.getFavourites();
+        return list.map(_stationToMediaItem).toList();
+      case 'all_stations':
+        // Retrieve a standard batch of stations for browsing
+        final list = await _stationRepo.searchStations('', 0, 100);
+        return list.map(_stationToMediaItem).toList();
+      default:
+        return [];
+    }
+  }
+
+  @override
+  Future<MediaItem?> getMediaItem(String mediaId) async {
+    final id = int.tryParse(mediaId);
+    if (id == null) return null;
+    final station = await _stationRepo.getStationById(id);
+    if (station == null) return null;
+    return _stationToMediaItem(station);
+  }
+
+  @override
+  Future<void> playFromMediaId(String mediaId, [Map<String, dynamic>? extras]) async {
+    final id = int.tryParse(mediaId);
+    if (id == null) return;
+    final station = await _stationRepo.getStationById(id);
+    if (station == null) return;
+    
+    // Set metadata before loading so OS updates UI
+    mediaItem.add(_stationToMediaItem(station));
+    
+    await playUrl(station.streamUrl);
+  }
+
   Future<void> dispose() async {
     await _player.dispose();
     await icyMetadataStream.close();
@@ -147,3 +223,4 @@ class RadioAudioHandler extends BaseAudioHandler {
     await skipToPreviousStream.close();
   }
 }
+

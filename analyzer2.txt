@@ -1,0 +1,10 @@
+﻿Analyzing RadioV2 Android...
+
+  error - lib\core\providers.dart:23:45 - The getter 'requireValue' isn't defined for the type 'AppDatabase'. Try importing the library that defines 'requireValue', correcting the name to the name of an existing getter, or defining a getter or field named 'requireValue'. - undefined_getter
+  error - lib\core\providers.dart:28:45 - The getter 'requireValue' isn't defined for the type 'AppDatabase'. Try importing the library that defines 'requireValue', correcting the name to the name of an existing getter, or defining a getter or field named 'requireValue'. - undefined_getter
+warning - lib\app.dart:5:8 - Unused import: 'core/providers.dart'. Try removing the import directive. - unused_import
+warning - lib\app.dart:24:7 - The declaration '_LoadingScreen' isn't referenced. Try removing the declaration of '_LoadingScreen'. - unused_element
+warning - lib\app.dart:48:7 - The declaration '_ErrorScreen' isn't referenced. Try removing the declaration of '_ErrorScreen'. - unused_element
+warning - lib\core\providers.dart:4:8 - Unused import: 'data/datasource/database_initializer.dart'. Try removing the import directive. - unused_import
+
+6 issues found.
