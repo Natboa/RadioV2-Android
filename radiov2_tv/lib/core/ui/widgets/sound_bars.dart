@@ -15,7 +15,7 @@ class SoundBars extends StatefulWidget {
 }
 
 class _SoundBarsState extends State<SoundBars>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _controller;
 
   // Phase offsets per bar (radians) — gives each bar a different rhythm
@@ -28,11 +28,21 @@ class _SoundBarsState extends State<SoundBars>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
     if (widget.isAnimating) _controller.repeat();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (widget.isAnimating && !_controller.isAnimating) _controller.repeat();
+    } else {
+      _controller.stop();
+    }
   }
 
   @override
@@ -47,6 +57,7 @@ class _SoundBarsState extends State<SoundBars>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
@@ -56,31 +67,36 @@ class _SoundBarsState extends State<SoundBars>
     final totalW =
         _barWidth * _phases.length + _barGap * (_phases.length - 1);
 
-    return SizedBox(
-      width: totalW,
-      height: _maxH,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (_, __) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(_phases.length, (i) {
-              final t = _controller.value * 2 * math.pi + _phases[i];
-              final h = _minH + (_maxH - _minH) * (math.sin(t) * 0.5 + 0.5);
-              return Padding(
-                padding: EdgeInsets.only(left: i == 0 ? 0 : _barGap),
-                child: Container(
-                  width: _barWidth,
-                  height: h,
-                  decoration: BoxDecoration(
-                    color: RadioV2Colors.accent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+    return RepaintBoundary(
+      child: ExcludeSemantics(
+        child: SizedBox(
+          width: totalW,
+          height: _maxH,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(_phases.length, (i) {
+                  final t = _controller.value * 2 * math.pi + _phases[i];
+                  final h =
+                      _minH + (_maxH - _minH) * (math.sin(t) * 0.5 + 0.5);
+                  return Padding(
+                    padding: EdgeInsets.only(left: i == 0 ? 0 : _barGap),
+                    child: Container(
+                      width: _barWidth,
+                      height: h,
+                      decoration: BoxDecoration(
+                        color: RadioV2Colors.accent,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  );
+                }),
               );
-            }),
-          );
-        },
+            },
+          ),
+        ),
       ),
     );
   }

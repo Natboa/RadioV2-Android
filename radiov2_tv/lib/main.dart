@@ -22,7 +22,7 @@ Future<void> main() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.radiov2.radiov2_tv.audio',
         androidNotificationChannelName: 'RadioV2 TV Playback',
-        androidStopForegroundOnPause: false,
+        androidStopForegroundOnPause: true,
       ),
     ),
     SharedPreferences.getInstance(),
