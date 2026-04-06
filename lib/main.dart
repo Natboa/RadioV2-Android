@@ -16,7 +16,7 @@ Future<void> main() async {
       config: const AudioServiceConfig(
         androidNotificationChannelId: 'com.radiov2.radiov2_android.audio',
         androidNotificationChannelName: 'RadioV2 Playback',
-        androidStopForegroundOnPause: false,
+        androidStopForegroundOnPause: true,
       ),
     ),
     SharedPreferences.getInstance(),

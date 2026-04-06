@@ -52,11 +52,9 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
 
   void _listenConnectivity() {
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
-      final hasConnection =
-          results.any((r) => r != ConnectivityResult.none);
-      if (hasConnection && state.isBuffering && state.station != null) {
-        _reconnect();
-      }
+      if (!state.isBuffering || state.station == null) return;
+      final hasConnection = results.any((r) => r != ConnectivityResult.none);
+      if (hasConnection) _reconnect();
     });
   }
 

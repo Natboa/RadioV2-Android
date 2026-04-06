@@ -12,6 +12,10 @@ final audioHandlerProvider = Provider<RadioAudioHandler>((ref) {
 class RadioAudioHandler extends BaseAudioHandler {
   final AudioPlayer _player = AudioPlayer();
 
+  // Track last broadcast values to avoid redundant notification redraws
+  ProcessingState? _lastProcessingState;
+  bool? _lastPlaying;
+
   /// Stream of ICY metadata (now-playing text from stream)
   final BehaviorSubject<String?> icyMetadataStream =
       BehaviorSubject.seeded(null);
@@ -95,6 +99,16 @@ class RadioAudioHandler extends BaseAudioHandler {
     }
 
     final isPlaying = _player.playing;
+    final processingState = _player.processingState;
+
+    // Skip broadcast when nothing meaningful changed — avoids redundant
+    // notification redraws on every buffer tick during live stream playback
+    if (isPlaying == _lastPlaying && processingState == _lastProcessingState) {
+      return;
+    }
+    _lastPlaying = isPlaying;
+    _lastProcessingState = processingState;
+
     playbackState.add(
       PlaybackState(
         controls: [
@@ -109,7 +123,7 @@ class RadioAudioHandler extends BaseAudioHandler {
           ProcessingState.buffering: AudioProcessingState.buffering,
           ProcessingState.ready: AudioProcessingState.ready,
           ProcessingState.completed: AudioProcessingState.completed,
-        }[_player.processingState]!,
+        }[processingState]!,
         playing: isPlaying,
         updatePosition: _player.position,
         bufferedPosition: _player.bufferedPosition,
