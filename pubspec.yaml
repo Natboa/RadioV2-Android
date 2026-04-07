@@ -2,7 +2,7 @@ name: radiov2_android
 description: "RadioV2 - Internet radio app"
 publish_to: 'none'
 
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.4.0
@@ -25,7 +25,8 @@ dependencies:
 
   # Audio
   just_audio: ^0.9.39
-  audio_service: ^0.18.13
+  audio_service:
+    path: packages/audio_service
   audio_session: ^0.1.21
 
   # Network / images
@@ -65,6 +66,7 @@ flutter:
 
   assets:
     - assets/database/stations.db
+    - assets/images/logo/empty.png
     - assets/images/logo/RadioV2_Logo.png
     - assets/images/logo/radiov2_Logo_full.png
     - assets/images/groups/
