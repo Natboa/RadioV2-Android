@@ -25,6 +25,12 @@
   </tr>
 </table>
 
+<p align="center">
+  <img src="assets/images/logo/android_auto.png" alt="Android Auto" width="64"/>
+  <br/>
+  <strong>Supports Android Auto</strong>
+</p>
+
 ## Overview
 
 RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you discover, browse, and stream tens of thousands of internet radio stations organized by genre and country, with full background playback and lock-screen controls.
@@ -40,6 +46,7 @@ RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you 
 - Media notification with artwork, play/pause, next, and previous controls
 - Lock screen controls
 - Animated equalizer bars on the currently playing station
+- Android Auto support — browse favourites and control playback from your car
 - Dark theme
 
 ## Installation
