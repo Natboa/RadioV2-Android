@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/version-1.0.2-blue?style=flat-square" alt="Version"/></a>
+  <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/version-1.0.3-blue?style=flat-square" alt="Version"/></a>
   <img src="https://img.shields.io/badge/platform-Android%208%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Platform"/>
   <img src="https://img.shields.io/badge/built%20with-Flutter-54C5F8?style=flat-square&logo=flutter&logoColor=white" alt="Flutter"/>
 </p>

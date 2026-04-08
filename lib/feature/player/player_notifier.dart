@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/audio_service_handler.dart';
 import '../../core/data/repository/favourite_repository.dart';
@@ -20,6 +19,8 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   StreamSubscription? _favSub;
   StreamSubscription? _skipNextSub;
   StreamSubscription? _skipPrevSub;
+  Timer? _stallTimer;
+  static const _stallTimeout = Duration(seconds: 15);
 
   PlayerNotifier(this._handler, this._favouriteRepo, this._onStationVisited)
       : super(const PlayerUiState()) {
@@ -31,11 +32,20 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   void _listenPlayback() {
     _playbackSub = _handler.playbackState.listen((ps) {
       final isError = ps.processingState == AudioProcessingState.error;
+      final isBuffering =
+          ps.processingState == AudioProcessingState.loading ||
+          ps.processingState == AudioProcessingState.buffering;
+
+      if (isBuffering) {
+        _stallTimer ??= Timer(_stallTimeout, _reconnect);
+      } else {
+        _stallTimer?.cancel();
+        _stallTimer = null;
+      }
+
       state = state.copyWith(
         isPlaying: ps.playing,
-        isBuffering:
-            ps.processingState == AudioProcessingState.loading ||
-            ps.processingState == AudioProcessingState.buffering,
+        isBuffering: isBuffering,
         isError: isError,
       );
     });
@@ -59,12 +69,16 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   }
 
   Future<void> _reconnect() async {
+    _stallTimer?.cancel();
+    _stallTimer = null;
     final station = state.station;
     if (station == null) return;
     await _handler.playUrl(station.streamUrl);
   }
 
   Future<void> playStation(Station station, List<Station> playlist) async {
+    _stallTimer?.cancel();
+    _stallTimer = null;
     _onStationVisited(station);
     // Create a fresh state so nowPlayingText and isError are truly cleared
     state = PlayerUiState(
@@ -87,23 +101,9 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
     );
     await _handler.playUrl(station.streamUrl);
 
-    // Upgrade artwork to a local file:// URI once cached — audio_service
-    // loads file:// URIs reliably as the notification large icon / background
-    if (station.logoUrl != null) {
-      DefaultCacheManager()
-          .getSingleFile(station.logoUrl!)
-          .then((file) {
-            // Only update if this station is still playing
-            if (state.station?.id == station.id) {
-              _handler.updateNowPlaying(
-                id: station.streamUrl,
-                title: station.name,
-                artUrl: file.uri.toString(),
-              );
-            }
-          })
-          .catchError((_) {});
-    }
+    // Note: do NOT upgrade to file:// URI here — Android Auto cannot load
+    // file:// paths from the app cache. The HTTP URL works for both the
+    // phone notification and Android Auto.
   }
 
   Future<void> playPause() async {
@@ -145,6 +145,7 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
 
   @override
   void dispose() {
+    _stallTimer?.cancel();
     _playbackSub?.cancel();
     _metaSub?.cancel();
     _connectivitySub?.cancel();
