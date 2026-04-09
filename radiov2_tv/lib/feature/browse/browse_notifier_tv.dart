@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/data/repository/station_repository.dart';
 import '../../core/providers.dart';
@@ -8,12 +9,28 @@ const _pageSize = 50;
 class BrowseTvNotifier extends StateNotifier<BrowseTvUiState> {
   final StationRepository _repo;
   bool _isLoadingMore = false;
+  String _query = '';
+  Timer? _debounce;
 
   BrowseTvNotifier(this._repo) : super(const BrowseTvLoading()) {
     _load();
   }
 
+  void search(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _query = query;
+      _load();
+    });
+  }
+
   Future<void> retry() => _load();
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   Future<void> loadMore() async {
     final current = state;
@@ -21,7 +38,7 @@ class BrowseTvNotifier extends StateNotifier<BrowseTvUiState> {
     _isLoadingMore = true;
     try {
       final more = await _repo.searchStations(
-        '',
+        _query,
         current.stations.length,
         _pageSize,
       );
@@ -37,7 +54,7 @@ class BrowseTvNotifier extends StateNotifier<BrowseTvUiState> {
   Future<void> _load() async {
     state = const BrowseTvLoading();
     try {
-      final stations = await _repo.searchStations('', 0, _pageSize);
+      final stations = await _repo.searchStations(_query, 0, _pageSize);
       if (stations.isEmpty) {
         state = const BrowseTvEmpty();
       } else {

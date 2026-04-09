@@ -53,10 +53,11 @@ class RadioAudioHandler extends BaseAudioHandler {
     required String title,
     String? artUrl,
   }) {
+    final defaultPlaceholder = Uri.parse('android.resource://com.radiov2.radiov2_android/drawable/radiov2_logo');
     mediaItem.add(MediaItem(
       id: id,
       title: title,
-      artUri: artUrl != null ? Uri.tryParse(artUrl) : null,
+      artUri: (artUrl != null && artUrl.isNotEmpty) ? Uri.tryParse(artUrl) : defaultPlaceholder,
     ));
   }
 
@@ -153,11 +154,21 @@ class RadioAudioHandler extends BaseAudioHandler {
   // --- Android Auto Media Browser Setup ---
 
   MediaItem _stationToMediaItem(Station station) {
+    Uri? uri;
+    if (station.logoUrl != null && station.logoUrl!.isNotEmpty) {
+      uri = Uri.tryParse(station.logoUrl!);
+    }
+    
+    // A default logo placeholder for Android Auto when the station has no logo
+    final defaultPlaceholder = Uri.parse('android.resource://com.radiov2.radiov2_android/drawable/radiov2_logo');
+
     return MediaItem(
       id: station.id.toString(),
       title: station.name,
-      album: 'RadioV2',
-      artUri: station.logoUrl != null ? Uri.tryParse(station.logoUrl!) : null,
+      artist: ' ', // Empty space prevents Android Auto from defaulting to "RadioV2"
+      displaySubtitle: ' ',
+      displayDescription: ' ',
+      artUri: uri ?? defaultPlaceholder,
       playable: true,
       extras: {'streamUrl': station.streamUrl},
     );
@@ -170,24 +181,22 @@ class RadioAudioHandler extends BaseAudioHandler {
   ]) async {
     switch (parentMediaId) {
       case AudioService.browsableRootId:
+      case AudioService.recentRootId:
+      case 'suggested':
+      case 'recommended':
+        // Show a single Favourites folder at the root
         return [
           const MediaItem(
             id: 'favourites',
             title: 'Favourites',
-            playable: false,
-          ),
-          const MediaItem(
-            id: 'all_stations',
-            title: 'All Stations',
+            artist: ' ',
+            displaySubtitle: ' ',
+            displayDescription: ' ',
             playable: false,
           ),
         ];
       case 'favourites':
         final list = await _favouriteRepo.getFavourites();
-        return list.map(_stationToMediaItem).toList();
-      case 'all_stations':
-        // Retrieve a standard batch of stations for browsing
-        final list = await _stationRepo.searchStations('', 0, 100);
         return list.map(_stationToMediaItem).toList();
       default:
         return [];

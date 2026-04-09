@@ -3,48 +3,78 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/model/station.dart';
 import '../../designsystem/tv_colors.dart';
+import '../../widgets/tv_search_bar.dart';
 import '../../feature/player/player_notifier.dart';
 import '../../navigation/tv_destinations.dart';
 import '../../widgets/tv_station_tile.dart';
 import 'browse_notifier_tv.dart';
 import 'browse_state_tv.dart';
 
-class BrowseScreen extends ConsumerWidget {
+class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
+}
+
+class _BrowseScreenState extends ConsumerState<BrowseScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(browseTvNotifierProvider);
 
-    return switch (state) {
-      BrowseTvLoading() => const Center(child: CircularProgressIndicator()),
-      BrowseTvEmpty() => const Center(
-          child: Text(
-            'No stations found.',
-            style: TextStyle(color: TvColors.onSurfaceVariant, fontSize: 18),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TvSearchBar(
+          controller: _searchController,
+          hintText: 'Search stations…',
+          onChanged: (q) =>
+              ref.read(browseTvNotifierProvider.notifier).search(q),
         ),
-      BrowseTvError(:final message) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: TvColors.error, size: 48),
-              const SizedBox(height: 16),
-              Text(message,
-                  style:
-                      const TextStyle(color: TvColors.onSurfaceVariant)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () =>
-                    ref.read(browseTvNotifierProvider.notifier).retry(),
-                child: const Text('Retry'),
+        Expanded(
+          child: switch (state) {
+            BrowseTvLoading() =>
+              const Center(child: CircularProgressIndicator()),
+            BrowseTvEmpty() => const Center(
+                child: Text(
+                  'No stations found.',
+                  style: TextStyle(
+                      color: TvColors.onSurfaceVariant, fontSize: 18),
+                ),
               ),
-            ],
-          ),
+            BrowseTvError(:final message) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        color: TvColors.error, size: 48),
+                    const SizedBox(height: 16),
+                    Text(message,
+                        style: const TextStyle(
+                            color: TvColors.onSurfaceVariant)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () =>
+                          ref.read(browseTvNotifierProvider.notifier).retry(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            BrowseTvSuccess(:final stations, :final hasMore) =>
+              _BrowseGrid(stations: stations, hasMore: hasMore),
+          },
         ),
-      BrowseTvSuccess(:final stations, :final hasMore) =>
-        _BrowseGrid(stations: stations, hasMore: hasMore),
-    };
+      ],
+    );
   }
 }
 
@@ -62,7 +92,7 @@ class _BrowseGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.only(left: 48, right: 48, top: 48, bottom: 24),
+      padding: const EdgeInsets.only(left: 48, right: 48, bottom: 24),
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) {
           if (n is ScrollEndNotification && n.metrics.extentAfter < 600) {

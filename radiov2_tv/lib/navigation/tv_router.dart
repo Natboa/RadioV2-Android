@@ -2,17 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'tv_destinations.dart';
 import '../shell/tv_shell.dart';
-import '../feature/home/home_screen.dart';
+import '../feature/browse/browse_screen.dart';
 import '../feature/discover/discover_screen.dart';
 import '../feature/discover/group_detail/group_detail_screen.dart';
-import '../feature/browse/browse_screen.dart';
 import '../feature/favourites/favourites_screen.dart';
 import '../feature/settings/settings_screen.dart';
 import '../feature/player/player_screen.dart';
 
 final tvRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: TvRoutes.home,
+    initialLocation: TvRoutes.favourites,
     routes: [
       // Player is a fullscreen overlay outside the shell
       GoRoute(
@@ -25,8 +24,8 @@ final tvRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: TvRoutes.home,
-                builder: (context, state) => const HomeScreen(),
+                path: TvRoutes.browse,
+                builder: (context, state) => const BrowseScreen(),
               ),
             ],
           ),
@@ -45,14 +44,6 @@ final tvRouterProvider = Provider<GoRouter>((ref) {
                     },
                   ),
                 ],
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: TvRoutes.browse,
-                builder: (context, state) => const BrowseScreen(),
               ),
             ],
           ),

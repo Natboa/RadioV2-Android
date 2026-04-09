@@ -4,43 +4,78 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/model/station.dart';
 import '../../designsystem/tv_colors.dart';
+import '../../widgets/tv_search_bar.dart';
 import '../../feature/player/player_notifier.dart';
 import '../../navigation/tv_destinations.dart';
 import '../../widgets/tv_station_tile.dart';
 import 'favourites_notifier_tv.dart';
 import 'favourites_state_tv.dart';
 
-class FavouritesScreen extends ConsumerWidget {
+class FavouritesScreen extends ConsumerStatefulWidget {
   const FavouritesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FavouritesScreen> createState() => _FavouritesScreenState();
+}
+
+class _FavouritesScreenState extends ConsumerState<FavouritesScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(favouritesTvNotifierProvider);
 
-    return switch (state) {
-      FavouritesTvLoading() =>
-        const Center(child: CircularProgressIndicator()),
-      FavouritesTvEmpty() => const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.favorite_outline,
-                  color: TvColors.onSurfaceVariant, size: 64),
-              SizedBox(height: 24),
-              Text(
-                'No favourites yet.',
-                style:
-                    TextStyle(color: TvColors.onSurfaceVariant, fontSize: 20),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TvSearchBar(
+          controller: _searchController,
+          hintText: 'Search favourites…',
+          onChanged: (q) => setState(() => _query = q.toLowerCase()),
+        ),
+        Expanded(
+          child: switch (state) {
+            FavouritesTvLoading() =>
+              const Center(child: CircularProgressIndicator()),
+            FavouritesTvEmpty() => const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.favorite_outline,
+                        color: TvColors.onSurfaceVariant, size: 64),
+                    SizedBox(height: 24),
+                    Text(
+                      'No favourites yet.',
+                      style: TextStyle(
+                          color: TvColors.onSurfaceVariant, fontSize: 20),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            FavouritesTvError(:final message) => Center(
+                child: Text(message,
+                    style:
+                        const TextStyle(color: TvColors.onSurfaceVariant)),
+              ),
+            FavouritesTvSuccess(:final stations) => _FavouritesGrid(
+                stations: _query.isEmpty
+                    ? stations
+                    : stations
+                        .where((s) =>
+                            s.name.toLowerCase().contains(_query))
+                        .toList(),
+              ),
+          },
         ),
-      FavouritesTvError(:final message) => Center(
-          child: Text(message,
-              style: const TextStyle(color: TvColors.onSurfaceVariant)),
-        ),
-      FavouritesTvSuccess(:final stations) => _FavouritesGrid(stations: stations),
-    };
+      ],
+    );
   }
 }
 
@@ -56,9 +91,16 @@ class _FavouritesGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (stations.isEmpty) {
+      return const Center(
+        child: Text(
+          'No results.',
+          style: TextStyle(color: TvColors.onSurfaceVariant, fontSize: 18),
+        ),
+      );
+    }
     return Padding(
-      padding:
-          const EdgeInsets.only(left: 48, right: 48, top: 48, bottom: 24),
+      padding: const EdgeInsets.only(left: 48, right: 48, bottom: 24),
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
@@ -140,7 +182,6 @@ class _FavTileState extends State<_FavTile> {
       ),
     );
     Overlay.of(context).insert(_overlay!);
-    // Auto-dismiss after 3 s
     Future.delayed(const Duration(seconds: 3), () {
       _overlay?.remove();
       _overlay = null;

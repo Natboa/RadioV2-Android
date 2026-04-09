@@ -4,40 +4,88 @@ import 'package:go_router/go_router.dart';
 import '../../core/model/category.dart';
 import '../../core/model/group.dart';
 import '../../designsystem/tv_colors.dart';
+import '../../widgets/tv_search_bar.dart';
 import '../../designsystem/tv_focus.dart';
 
 import 'discover_notifier_tv.dart';
 import 'discover_state_tv.dart';
 
-class DiscoverScreen extends ConsumerWidget {
+class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DiscoverScreen> createState() => _DiscoverScreenState();
+}
+
+class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(discoverTvNotifierProvider);
 
-    return switch (state) {
-      DiscoverTvLoading() => const Center(child: CircularProgressIndicator()),
-      DiscoverTvError(:final message) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: TvColors.error, size: 48),
-              const SizedBox(height: 16),
-              Text(message,
-                  style: const TextStyle(color: TvColors.onSurfaceVariant)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () =>
-                    ref.read(discoverTvNotifierProvider.notifier).retry(),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TvSearchBar(
+          controller: _searchController,
+          hintText: 'Search genres…',
+          onChanged: (q) => setState(() => _query = q.toLowerCase()),
         ),
-      DiscoverTvSuccess(:final categories) =>
-        _DiscoverContent(categories: categories),
-    };
+        Expanded(
+          child: switch (state) {
+            DiscoverTvLoading() =>
+              const Center(child: CircularProgressIndicator()),
+            DiscoverTvError(:final message) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        color: TvColors.error, size: 48),
+                    const SizedBox(height: 16),
+                    Text(message,
+                        style: const TextStyle(
+                            color: TvColors.onSurfaceVariant)),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () =>
+                          ref.read(discoverTvNotifierProvider.notifier).retry(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            DiscoverTvSuccess(:final categories) => _DiscoverContent(
+                categories: _query.isEmpty
+                    ? categories
+                    : _filterCategories(categories, _query),
+              ),
+          },
+        ),
+      ],
+    );
+  }
+
+  List<CategoryWithGroups> _filterCategories(
+      List<CategoryWithGroups> cats, String query) {
+    return cats
+        .map((c) => CategoryWithGroups(
+              category: c.category,
+              groups: c.groups
+                  .where((g) => g.name.toLowerCase().contains(query))
+                  .toList(),
+            ))
+        .where((c) =>
+            c.groups.isNotEmpty ||
+            c.category.name.toLowerCase().contains(query))
+        .toList();
   }
 }
 
@@ -48,8 +96,16 @@ class _DiscoverContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (categories.isEmpty) {
+      return const Center(
+        child: Text(
+          'No results.',
+          style: TextStyle(color: TvColors.onSurfaceVariant, fontSize: 18),
+        ),
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.only(left: 48, right: 48, top: 48, bottom: 24),
+      padding: const EdgeInsets.only(left: 48, right: 48, bottom: 24),
       child: ListView.builder(
         itemCount: categories.length,
         itemBuilder: (context, i) {
@@ -109,8 +165,7 @@ class _GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imagePath =
-        'assets/images/groups/${group.name}.png';
+    final imagePath = 'assets/images/groups/${group.name}.png';
 
     return TvFocusCard(
       autofocus: autofocus,
@@ -184,3 +239,4 @@ class _GroupCard extends StatelessWidget {
     );
   }
 }
+
