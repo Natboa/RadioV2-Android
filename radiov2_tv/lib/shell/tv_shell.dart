@@ -1,8 +1,30 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../designsystem/tv_colors.dart';
 import '../designsystem/tv_focus.dart';
+import '../feature/player/player_notifier.dart';
+
+/// Exposes a [focusRail] callback so any descendant widget can explicitly
+/// jump focus back to the side-rail (used as a fallback when D-pad left
+/// traversal cannot find a focusable node within the content FocusScope).
+class TvShellScope extends InheritedWidget {
+  final VoidCallback focusRail;
+
+  const TvShellScope({
+    super.key,
+    required this.focusRail,
+    required super.child,
+  });
+
+  static TvShellScope? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<TvShellScope>();
+
+  @override
+  bool updateShouldNotify(TvShellScope oldWidget) => false;
+}
 
 class TvShell extends StatefulWidget {
   final StatefulNavigationShell shell;
@@ -51,20 +73,143 @@ class _TvShellState extends State<TvShell> {
           ),
         );
       },
-      child: Scaffold(
-        backgroundColor: TvColors.background,
-        body: Row(
-          children: [
-            TvSideRail(
-              currentIndex: widget.shell.currentIndex,
-              selectedButtonFocusNode: _currentRailFocus,
-              onSelect: (index) => widget.shell.goBranch(
-                  index,
-                  initialLocation: index == widget.shell.currentIndex),
-            ),
-            Expanded(child: widget.shell),
-          ],
+      child: TvShellScope(
+        focusRail: _currentRailFocus.requestFocus,
+        child: Scaffold(
+          backgroundColor: TvColors.background,
+          body: Row(
+            children: [
+              TvSideRail(
+                currentIndex: widget.shell.currentIndex,
+                selectedButtonFocusNode: _currentRailFocus,
+                onSelect: (index) => widget.shell.goBranch(
+                    index,
+                    initialLocation: index == widget.shell.currentIndex),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Expanded(child: widget.shell),
+                    const _NowPlayingBar(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Now-playing bar
+// ---------------------------------------------------------------------------
+
+class _NowPlayingBar extends ConsumerWidget {
+  const _NowPlayingBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final player = ref.watch(playerNotifierProvider);
+    if (player.isIdle) return const SizedBox.shrink();
+
+    final station = player.station!;
+    final icyText = player.nowPlayingText;
+
+    return Container(
+      height: 68,
+      decoration: const BoxDecoration(
+        color: TvColors.surface,
+        border: Border(
+          top: BorderSide(color: TvColors.accent, width: 2),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          // Station logo
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: station.logoUrl != null && station.logoUrl!.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: station.logoUrl!,
+                    width: 44,
+                    height: 44,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => const _LogoPlaceholder(),
+                    errorWidget: (_, __, ___) => const _LogoPlaceholder(),
+                  )
+                : const _LogoPlaceholder(),
+          ),
+          const SizedBox(width: 16),
+          // Station name + icy metadata
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  station.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: TvColors.onSurface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (icyText != null && icyText.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    icyText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: TvColors.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Live indicator dot
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: player.isPlaying ? TvColors.accent : TvColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'LIVE',
+            style: TextStyle(
+              color: player.isPlaying ? TvColors.accent : TvColors.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogoPlaceholder extends StatelessWidget {
+  const _LogoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 44,
+      height: 44,
+      child: ColoredBox(
+        color: TvColors.surfaceVariant,
+        child: Icon(Icons.radio, color: TvColors.onSurfaceVariant, size: 24),
       ),
     );
   }

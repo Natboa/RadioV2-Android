@@ -140,7 +140,7 @@ class _CategoryRow extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 110,
+            height: 143,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: category.groups.length,
@@ -170,11 +170,11 @@ class _GroupCard extends StatelessWidget {
     return TvFocusCard(
       autofocus: autofocus,
       borderRadius: const BorderRadius.all(Radius.circular(12)),
-      showFocusBorder: false,
+      focusScale: 1.12,
       onTap: () => context.go('/discover/group/${group.id}'),
       child: SizedBox(
-        width: 110,
-        height: 110,
+        width: 143,
+        height: 143,
         child: Stack(
           fit: StackFit.expand,
           children: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../shell/tv_shell.dart';
 import 'tv_colors.dart';
 
 /// A reusable focusable card for TV D-pad navigation.
@@ -13,6 +14,8 @@ class TvFocusCard extends StatefulWidget {
   final bool autofocus;
   final BorderRadius borderRadius;
   final bool showFocusBorder;
+  /// Scale applied to the card when it is focused. Defaults to 1.05.
+  final double focusScale;
 
   const TvFocusCard({
     super.key,
@@ -22,6 +25,7 @@ class TvFocusCard extends StatefulWidget {
     this.autofocus = false,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
     this.showFocusBorder = true,
+    this.focusScale = 1.05,
   });
 
   @override
@@ -47,7 +51,9 @@ class _TvFocusCardState extends State<TvFocusCard> {
           return KeyEventResult.handled;
         }
         if (key == LogicalKeyboardKey.arrowLeft) {
-          FocusScope.of(context).focusInDirection(TraversalDirection.left);
+          final moved = FocusTraversalGroup.of(context)
+              .inDirection(node, TraversalDirection.left);
+          if (!moved) TvShellScope.of(context)?.focusRail();
           return KeyEventResult.handled;
         }
         if (key == LogicalKeyboardKey.arrowRight) {
@@ -67,7 +73,7 @@ class _TvFocusCardState extends State<TvFocusCard> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedScale(
-          scale: _focused ? 1.05 : 1.0,
+          scale: _focused ? widget.focusScale : 1.0,
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOutCubic,
           child: AnimatedContainer(

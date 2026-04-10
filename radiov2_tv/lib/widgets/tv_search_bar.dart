@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../designsystem/tv_colors.dart';
+import '../shell/tv_shell.dart';
 
 /// TV-friendly search bar.
 /// Arrow keys navigate away rather than moving the text cursor,
@@ -33,7 +34,9 @@ class _TvSearchBarState extends State<TvSearchBar> {
         final key = event.logicalKey;
         if (key == LogicalKeyboardKey.arrowLeft ||
             key == LogicalKeyboardKey.arrowUp) {
-          FocusScope.of(context).focusInDirection(TraversalDirection.left);
+          final moved = FocusTraversalGroup.of(context)
+              .inDirection(node, TraversalDirection.left);
+          if (!moved) TvShellScope.of(context)?.focusRail();
           return KeyEventResult.handled;
         }
         if (key == LogicalKeyboardKey.arrowDown ||
@@ -44,10 +47,21 @@ class _TvSearchBarState extends State<TvSearchBar> {
         return KeyEventResult.ignored;
       },
     );
+    // Auto-show the soft keyboard on Android TV whenever this field gains focus.
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus) {
+      // On Android TV the IME doesn't always appear automatically when a
+      // TextField receives focus via D-pad. Force-show it here.
+      SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+    }
   }
 
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
     super.dispose();
   }
