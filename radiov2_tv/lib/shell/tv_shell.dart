@@ -14,20 +14,20 @@ class TvShell extends StatefulWidget {
 }
 
 class _TvShellState extends State<TvShell> {
-  final _firstRailFocus = FocusNode();
+  final _currentRailFocus = FocusNode();
   DateTime? _lastBackPress;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _firstRailFocus.requestFocus();
+      if (mounted) _currentRailFocus.requestFocus();
     });
   }
 
   @override
   void dispose() {
-    _firstRailFocus.dispose();
+    _currentRailFocus.dispose();
     super.dispose();
   }
 
@@ -57,7 +57,7 @@ class _TvShellState extends State<TvShell> {
           children: [
             TvSideRail(
               currentIndex: widget.shell.currentIndex,
-              firstButtonFocusNode: _firstRailFocus,
+              selectedButtonFocusNode: _currentRailFocus,
               onSelect: (index) => widget.shell.goBranch(
                   index,
                   initialLocation: index == widget.shell.currentIndex),
@@ -92,13 +92,13 @@ const _railItems = [
 class TvSideRail extends StatelessWidget {
   final int currentIndex;
   final void Function(int) onSelect;
-  final FocusNode? firstButtonFocusNode;
+  final FocusNode? selectedButtonFocusNode;
 
   const TvSideRail({
     super.key,
     required this.currentIndex,
     required this.onSelect,
-    this.firstButtonFocusNode,
+    this.selectedButtonFocusNode,
   });
 
   @override
@@ -113,7 +113,7 @@ class TvSideRail extends StatelessWidget {
             _RailButton(
               item: _railItems[i],
               selected: i == currentIndex,
-              focusNode: i == 0 ? firstButtonFocusNode : null,
+              focusNode: i == currentIndex ? selectedButtonFocusNode : null,
               onTap: () => onSelect(i),
             ),
         ],

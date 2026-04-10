@@ -12,6 +12,7 @@ class TvFocusCard extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final BorderRadius borderRadius;
+  final bool showFocusBorder;
 
   const TvFocusCard({
     super.key,
@@ -20,6 +21,7 @@ class TvFocusCard extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.showFocusBorder = true,
   });
 
   @override
@@ -36,11 +38,28 @@ class _TvFocusCardState extends State<TvFocusCard> {
       autofocus: widget.autofocus,
       onFocusChange: (focused) => setState(() => _focused = focused),
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            (event.logicalKey == LogicalKeyboardKey.select ||
-             event.logicalKey == LogicalKeyboardKey.enter ||
-             event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        final key = event.logicalKey;
+        if (key == LogicalKeyboardKey.select ||
+            key == LogicalKeyboardKey.enter ||
+            key == LogicalKeyboardKey.numpadEnter) {
           widget.onTap?.call();
+          return KeyEventResult.handled;
+        }
+        if (key == LogicalKeyboardKey.arrowLeft) {
+          FocusScope.of(context).focusInDirection(TraversalDirection.left);
+          return KeyEventResult.handled;
+        }
+        if (key == LogicalKeyboardKey.arrowRight) {
+          FocusScope.of(context).focusInDirection(TraversalDirection.right);
+          return KeyEventResult.handled;
+        }
+        if (key == LogicalKeyboardKey.arrowUp) {
+          FocusScope.of(context).focusInDirection(TraversalDirection.up);
+          return KeyEventResult.handled;
+        }
+        if (key == LogicalKeyboardKey.arrowDown) {
+          FocusScope.of(context).focusInDirection(TraversalDirection.down);
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;
@@ -56,7 +75,7 @@ class _TvFocusCardState extends State<TvFocusCard> {
             curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
               borderRadius: widget.borderRadius,
-              border: _focused
+              border: (_focused && widget.showFocusBorder)
                   ? Border.all(color: TvColors.focusBorder, width: 2)
                   : Border.all(color: Colors.transparent, width: 2),
               color: _focused ? TvColors.focusOverlay : Colors.transparent,

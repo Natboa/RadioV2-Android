@@ -52,8 +52,8 @@ class _Artwork extends StatelessWidget {
     final logoUrl = state.station?.logoUrl;
 
     return SizedBox(
-      width: 240,
-      height: 240,
+      width: 360,
+      height: 360,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: Stack(
@@ -85,7 +85,7 @@ class _Artwork extends StatelessWidget {
                 color: Color(0x88000000),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            if (state.isError)
+            if (state.isError && !state.isBuffering)
               const ColoredBox(
                 color: Color(0x88000000),
                 child: Center(
@@ -173,7 +173,9 @@ class _InfoControls extends ConsumerWidget {
             ),
             const SizedBox(width: 16),
             _ControlButton(
-              icon: state.isPlaying ? Icons.pause_circle : Icons.play_circle,
+              icon: (state.isPlaying || state.isBuffering)
+                  ? Icons.pause_circle
+                  : Icons.play_circle,
               size: 64,
               iconColor: state.isError ? TvColors.error : TvColors.accent,
               autofocus: true,

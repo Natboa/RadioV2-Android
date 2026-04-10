@@ -61,6 +61,7 @@ class _GroupDetailContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allStations = [...state.featured, ...state.stations];
+    final hasFeatured = state.featured.isNotEmpty;
 
     return Scaffold(
       backgroundColor: TvColors.background,
@@ -86,27 +87,65 @@ class _GroupDetailContent extends ConsumerWidget {
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
-                  if (n is ScrollEndNotification &&
-                      n.metrics.extentAfter < 400) {
-                    ref
-                        .read(groupDetailTvNotifierProvider(groupId).notifier)
-                        .loadMore();
+                  if (n is ScrollEndNotification && n.metrics.extentAfter < 400) {
+                    ref.read(groupDetailTvNotifierProvider(groupId).notifier).loadMore();
                   }
                   return false;
                 },
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: allStations.length,
-                  itemBuilder: (context, i) => TvStationTile(
-                    station: allStations[i],
-                    autofocus: i == 0,
-                    onTap: () => _play(context, ref, allStations[i], allStations),
-                  ),
+                child: CustomScrollView(
+                  slivers: [
+                    if (hasFeatured) ...[
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'Featured',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: TvColors.accent,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) => TvStationTile(
+                            station: state.featured[i],
+                            autofocus: i == 0,
+                            onTap: () => _play(context, ref, state.featured[i], allStations),
+                          ),
+                          childCount: state.featured.length,
+                        ),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1,
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Divider(color: TvColors.divider, thickness: 1),
+                        ),
+                      ),
+                    ],
+                    SliverGrid(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) => TvStationTile(
+                          station: state.stations[i],
+                          autofocus: !hasFeatured && i == 0,
+                          onTap: () => _play(context, ref, state.stations[i], allStations),
+                        ),
+                        childCount: state.stations.length,
+                      ),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
