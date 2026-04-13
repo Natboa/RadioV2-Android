@@ -89,6 +89,8 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
   }
 }
 
+// ── Content ───────────────────────────────────────────────────────────────────
+
 class _DiscoverContent extends StatelessWidget {
   final List<CategoryWithGroups> categories;
 
@@ -104,77 +106,98 @@ class _DiscoverContent extends StatelessWidget {
         ),
       );
     }
+
+    final slivers = <Widget>[];
+    for (int i = 0; i < categories.length; i++) {
+      final cat = categories[i];
+      if (cat.groups.isEmpty) continue;
+
+      // Category header — scrolls with the content, never pins/stacks.
+      slivers.add(SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 8),
+          child: Text(
+            cat.category.name,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: TvColors.onBackground,
+                ),
+          ),
+        ),
+      ));
+
+      // Horizontal card row.
+      slivers.add(SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: _CategoryHorizontalList(groups: cat.groups),
+        ),
+      ));
+    }
+    slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 24)));
+
     return Padding(
-      padding: const EdgeInsets.only(left: 48, right: 48, bottom: 24),
-      child: ListView.builder(
-        itemCount: categories.length,
-        itemBuilder: (context, i) {
-          final cat = categories[i];
-          if (cat.groups.isEmpty) return const SizedBox.shrink();
-          return _CategoryRow(
-            category: cat,
-            autofocusFirst: i == 0,
-          );
-        },
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: CustomScrollView(
+        // Smooth bouncy physics for animated scroll feel.
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        slivers: slivers,
       ),
     );
   }
 }
 
-class _CategoryRow extends StatelessWidget {
-  final CategoryWithGroups category;
-  final bool autofocusFirst;
+// ── Horizontal card row ───────────────────────────────────────────────────────
 
-  const _CategoryRow({required this.category, this.autofocusFirst = false});
+/// Row height = card size (165) + 12 vertical padding on each side (24 total)
+/// = 189 ≈ 190. This gives enough room for the 1.1× focus-scale to expand
+/// without being clipped.
+const _kCardSize = 165.0;
+const _kRowHeight = 190.0;
+const _kRowVerticalPadding = 12.0;
+
+class _CategoryHorizontalList extends StatelessWidget {
+  final List<Group> groups;
+
+  const _CategoryHorizontalList({required this.groups});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            category.category.name,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 143,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: category.groups.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, i) => _GroupCard(
-                group: category.groups[i],
-                autofocus: autofocusFirst && i == 0,
-              ),
-            ),
-          ),
-        ],
+    return SizedBox(
+      height: _kRowHeight,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        // Allow focused cards to scale outside the row without being clipped.
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(vertical: _kRowVerticalPadding),
+        itemCount: groups.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, i) => _GroupCard(group: groups[i]),
       ),
     );
   }
 }
 
+// ── Group card ────────────────────────────────────────────────────────────────
+
 class _GroupCard extends StatelessWidget {
   final Group group;
-  final bool autofocus;
 
-  const _GroupCard({required this.group, this.autofocus = false});
+  const _GroupCard({required this.group});
 
   @override
   Widget build(BuildContext context) {
     final imagePath = 'assets/images/groups/${group.name}.png';
 
     return TvFocusCard(
-      autofocus: autofocus,
+      autofocus: false,
       borderRadius: const BorderRadius.all(Radius.circular(12)),
-      focusScale: 1.12,
+      focusScale: 1.1,
       onTap: () => context.go('/discover/group/${group.id}'),
       child: SizedBox(
-        width: 143,
-        height: 143,
+        width: _kCardSize,
+        height: _kCardSize,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -190,6 +213,7 @@ class _GroupCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Gradient overlay so text is legible over any image.
             Positioned(
               left: 0,
               right: 0,
@@ -240,4 +264,3 @@ class _GroupCard extends StatelessWidget {
     );
   }
 }
-

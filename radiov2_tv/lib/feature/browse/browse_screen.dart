@@ -110,7 +110,7 @@ class _BrowseGrid extends ConsumerWidget {
           itemCount: stations.length,
           itemBuilder: (context, i) => TvStationTile(
             station: stations[i],
-            autofocus: i == 0,
+            autofocus: false,
             onTap: () => _play(context, ref, stations[i]),
           ),
         ),

@@ -36,21 +36,31 @@ class TvShell extends StatefulWidget {
 }
 
 class _TvShellState extends State<TvShell> {
-  final _currentRailFocus = FocusNode();
+  // One FocusNode per rail item so we can focus any of them individually.
+  final _railFocusNodes =
+      List.generate(_railItems.length, (_) => FocusNode());
   DateTime? _lastBackPress;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _currentRailFocus.requestFocus();
+      if (mounted) _railFocusNodes[widget.shell.currentIndex].requestFocus();
     });
   }
 
   @override
   void dispose() {
-    _currentRailFocus.dispose();
+    for (final n in _railFocusNodes) {
+      n.dispose();
+    }
     super.dispose();
+  }
+
+  // Focus the currently-selected rail button (called by descendants via
+  // TvShellScope when D-pad left reaches the rail edge).
+  void _focusRail() {
+    _railFocusNodes[widget.shell.currentIndex].requestFocus();
   }
 
   @override
@@ -74,14 +84,14 @@ class _TvShellState extends State<TvShell> {
         );
       },
       child: TvShellScope(
-        focusRail: _currentRailFocus.requestFocus,
+        focusRail: _focusRail,
         child: Scaffold(
           backgroundColor: TvColors.background,
           body: Row(
             children: [
               TvSideRail(
                 currentIndex: widget.shell.currentIndex,
-                selectedButtonFocusNode: _currentRailFocus,
+                railFocusNodes: _railFocusNodes,
                 onSelect: (index) => widget.shell.goBranch(
                     index,
                     initialLocation: index == widget.shell.currentIndex),
@@ -215,6 +225,10 @@ class _LogoPlaceholder extends StatelessWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Side rail
+// ---------------------------------------------------------------------------
+
 class _RailItem {
   final IconData icon;
   final IconData selectedIcon;
@@ -237,13 +251,13 @@ const _railItems = [
 class TvSideRail extends StatelessWidget {
   final int currentIndex;
   final void Function(int) onSelect;
-  final FocusNode? selectedButtonFocusNode;
+  final List<FocusNode> railFocusNodes;
 
   const TvSideRail({
     super.key,
     required this.currentIndex,
     required this.onSelect,
-    this.selectedButtonFocusNode,
+    required this.railFocusNodes,
   });
 
   @override
@@ -258,7 +272,7 @@ class TvSideRail extends StatelessWidget {
             _RailButton(
               item: _railItems[i],
               selected: i == currentIndex,
-              focusNode: i == currentIndex ? selectedButtonFocusNode : null,
+              focusNode: railFocusNodes[i],
               onTap: () => onSelect(i),
             ),
         ],
@@ -267,27 +281,69 @@ class TvSideRail extends StatelessWidget {
   }
 }
 
-class _RailButton extends StatelessWidget {
+/// Rail button that navigates to its page as soon as it receives D-pad focus,
+/// so the user doesn't need to press OK/Select to switch pages.
+/// Focus is kept on the rail button after the shell rebuilds.
+class _RailButton extends StatefulWidget {
   final _RailItem item;
   final bool selected;
-  final FocusNode? focusNode;
+  final FocusNode focusNode;
   final VoidCallback onTap;
 
   const _RailButton({
     required this.item,
     required this.selected,
+    required this.focusNode,
     required this.onTap,
-    this.focusNode,
   });
+
+  @override
+  State<_RailButton> createState() => _RailButtonState();
+}
+
+class _RailButtonState extends State<_RailButton> {
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_onFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(_RailButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_onFocusChanged);
+      widget.focusNode.addListener(_onFocusChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_onFocusChanged);
+    super.dispose();
+  }
+
+  void _onFocusChanged() {
+    if (!mounted || !widget.focusNode.hasFocus) return;
+    // Navigate to this page immediately on focus.
+    widget.onTap();
+    // Re-request focus after the navigation rebuilds the shell so focus
+    // stays on the rail and doesn't jump into the page content.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.focusNode.hasFocus) {
+        widget.focusNode.requestFocus();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: item.label,
+      message: widget.item.label,
       preferBelow: false,
       child: TvFocusCard(
-        onTap: onTap,
-        focusNode: focusNode,
+        onTap: widget.onTap,
+        focusNode: widget.focusNode,
         borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Container(
           width: 56,
@@ -295,11 +351,13 @@ class _RailButton extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
-            color: selected ? TvColors.accent.withAlpha(40) : Colors.transparent,
+            color: widget.selected
+                ? TvColors.accent.withAlpha(40)
+                : Colors.transparent,
           ),
           child: Icon(
-            selected ? item.selectedIcon : item.icon,
-            color: selected ? TvColors.accent : TvColors.onSurfaceVariant,
+            widget.selected ? widget.item.selectedIcon : widget.item.icon,
+            color: widget.selected ? TvColors.accent : TvColors.onSurfaceVariant,
             size: 28,
           ),
         ),

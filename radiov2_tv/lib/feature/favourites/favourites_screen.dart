@@ -111,7 +111,7 @@ class _FavouritesGrid extends ConsumerWidget {
         itemCount: stations.length,
         itemBuilder: (context, i) => _FavTile(
           station: stations[i],
-          autofocus: i == 0,
+          autofocus: false,
           onTap: () => _play(context, ref, stations[i]),
           onRemove: () => ref
               .read(favouritesTvNotifierProvider.notifier)
