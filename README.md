@@ -27,10 +27,14 @@
 
 <p align="center">
   <img src="assets/images/logo/android_auto.png" alt="Android Auto" width="64"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="assets/images/logo/android_tv.png" alt="Android TV" width="160"/>
+  &nbsp;&nbsp;
+  <strong>Supports Android Auto</strong>
+</p>
+
+<p align="center">
+  <img src="assets/images/logo/android_tv.png" alt="Android TV" width="680"/>
   <br/>
-  <strong>Supports Android Auto &amp; Android TV</strong>
+  <strong>Supports Android TV</strong>
 </p>
 
 ## Overview
