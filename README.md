@@ -27,8 +27,10 @@
 
 <p align="center">
   <img src="assets/images/logo/android_auto.png" alt="Android Auto" width="64"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="assets/images/logo/android_tv.png" alt="Android TV" width="160"/>
   <br/>
-  <strong>Supports Android Auto</strong>
+  <strong>Supports Android Auto &amp; Android TV</strong>
 </p>
 
 ## Overview
@@ -47,6 +49,7 @@ RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you 
 - Lock screen controls
 - Animated equalizer bars on the currently playing station
 - Android Auto support — browse favourites and control playback from your car
+- Android TV support — full D-pad navigable TV interface with side rail, discover, browse, and favourites
 - Dark theme
 
 ## Installation
@@ -55,7 +58,7 @@ RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you 
 
 Download the latest release APK and install it on your Android device (Android 8.0 or higher):
 
-👉 [app-release.apk](https://github.com/Natboa/RadioV2-Android/releases)
+👉 [RadioV2.apk](https://github.com/Natboa/RadioV2-Android/releases)
 
 > Enable *Install from unknown sources* in your device settings if prompted.
 
