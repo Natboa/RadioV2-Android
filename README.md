@@ -11,9 +11,7 @@
 <h3 align="center">A modern Android internet radio player with a clean dark UI.</h3>
 
 <p align="center">
-  <a href="https://github.com/Natboa/RadioV2/releases">
-    <img src="https://img.shields.io/badge/Also%20available%20on-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Available on Windows"/>
-  </a>
+  <img src="https://img.shields.io/badge/Also%20available%20on-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Available on Windows"/>
 </p>
 
 <table align="center">
@@ -58,11 +56,15 @@ RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you 
 
 ## Installation
 
-**Option 1 — Install APK directly**
+Two separate APKs are available — one for phones and one for Android TV. Download the right one for your device from the [latest release](https://github.com/Natboa/RadioV2-Android/releases).
 
-Download the latest release APK and install it on your Android device (Android 8.0 or higher):
+**Phone (Android 8.0+)**
 
 👉 [RadioV2.apk](https://github.com/Natboa/RadioV2-Android/releases)
+
+**Android TV**
+
+👉 [RadioV2-TV.apk](https://github.com/Natboa/RadioV2-Android/releases)
 
 > Enable *Install from unknown sources* in your device settings if prompted.
 
