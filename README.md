@@ -7,6 +7,7 @@
   <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/platform-Android%208%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android"/></a>
   <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/platform-Android%20TV-3DDC84?style=flat-square&logo=androidtv&logoColor=white" alt="Android TV"/></a>
   <img src="https://img.shields.io/badge/built%20with-Flutter-54C5F8?style=flat-square&logo=flutter&logoColor=white" alt="Flutter"/>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"/></a>
 </p>
 
 <h3 align="center">A modern Android internet radio player with a clean dark UI.</h3>
@@ -110,3 +111,7 @@ lib/
 ## Legal
 
 RadioV2 Android is an internet radio aggregator and does not host or rebroadcast audio content. All streams are provided by third-party radio stations and accessed directly by users.
+
+## License
+
+Distributed under the MIT License. See [LICENSE](LICENSE) for details.
