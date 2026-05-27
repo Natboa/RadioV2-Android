@@ -1,9 +1,32 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val keyProperties = Properties()
+val keyPropertiesFile = sequenceOf(
+    // Preferred: radiov2_tv/android/key.properties
+    rootProject.file("key.properties"),
+    // Fallback: use the shared keystore config from the main Android app
+    // at repoRoot/android/key.properties
+    rootProject.file("../../android/key.properties"),
+).firstOrNull { it.exists() }
+
+if (keyPropertiesFile != null) {
+    keyProperties.load(keyPropertiesFile.inputStream())
+}
+
+fun keyProp(name: String): String? = keyProperties.getProperty(name)
+
+val hasReleaseSigning =
+    !keyProp("keyAlias").isNullOrBlank() &&
+        !keyProp("keyPassword").isNullOrBlank() &&
+        !keyProp("storeFile").isNullOrBlank() &&
+        !keyProp("storePassword").isNullOrBlank()
 
 android {
     namespace = "com.example.radiov2_tv"
@@ -20,21 +43,37 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.radiov2_tv"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                keyAlias = keyProp("keyAlias")!!
+                keyPassword = keyProp("keyPassword")!!
+                storeFile = file(keyProp("storeFile")!!)
+                storePassword = keyProp("storePassword")!!
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig =
+                if (hasReleaseSigning) signingConfigs.getByName("release")
+                else signingConfigs.getByName("debug")
+        }
+    }
+
+    applicationVariants.all {
+        val variant = this
+        variant.outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "RadioV2-TV.apk"
         }
     }
 }

@@ -3,6 +3,8 @@ import '../../core/model/station.dart';
 
 @immutable
 class PlayerUiState {
+  static const _unset = Object();
+
   final Station? station;
   final List<Station> playlist;
   final bool isPlaying;
@@ -29,7 +31,7 @@ class PlayerUiState {
     bool? isPlaying,
     bool? isBuffering,
     bool? isError,
-    String? nowPlayingText,
+    Object? nowPlayingText = _unset,
     bool? isFavourite,
   }) {
     return PlayerUiState(
@@ -38,7 +40,9 @@ class PlayerUiState {
       isPlaying: isPlaying ?? this.isPlaying,
       isBuffering: isBuffering ?? this.isBuffering,
       isError: isError ?? this.isError,
-      nowPlayingText: nowPlayingText ?? this.nowPlayingText,
+      nowPlayingText: identical(nowPlayingText, _unset)
+          ? this.nowPlayingText
+          : nowPlayingText as String?,
       isFavourite: isFavourite ?? this.isFavourite,
     );
   }

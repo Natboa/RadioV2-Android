@@ -4,12 +4,14 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/audio_service_handler.dart';
 import '../../core/data/repository/favourite_repository.dart';
+import '../../core/data/repository/station_repository.dart';
 import '../../core/model/station.dart';
 import '../../core/providers.dart';
 import 'player_state.dart';
 
 class PlayerNotifier extends StateNotifier<PlayerUiState> {
   final RadioAudioHandler _handler;
+  final StationRepository _stationRepo;
   final FavouriteRepository _favouriteRepo;
   final void Function(Station) _onStationVisited;
 
@@ -19,22 +21,40 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   StreamSubscription? _favSub;
   StreamSubscription? _skipNextSub;
   StreamSubscription? _skipPrevSub;
+  StreamSubscription? _mediaItemSub;
   Timer? _stallTimer;
   static const _stallTimeout = Duration(seconds: 15);
 
-  PlayerNotifier(this._handler, this._favouriteRepo, this._onStationVisited)
+  PlayerNotifier(
+    this._handler,
+    this._stationRepo,
+    this._favouriteRepo,
+    this._onStationVisited,
+  )
       : super(const PlayerUiState()) {
     _listenPlayback();
     _listenConnectivity();
     _listenSkips();
+    _listenMediaItem();
   }
 
   void _listenPlayback() {
     _playbackSub = _handler.playbackState.listen((ps) {
+      final wasPlaying = state.isPlaying;
+      final wasBuffering = state.isBuffering;
+      final wasError = state.isError;
+
       final isError = ps.processingState == AudioProcessingState.error;
       final isBuffering =
           ps.processingState == AudioProcessingState.loading ||
           ps.processingState == AudioProcessingState.buffering;
+
+      final startedPlaying = !wasPlaying && ps.playing;
+      final shouldClearNowPlaying =
+          startedPlaying && (wasBuffering || wasError || isBuffering);
+
+        final bufferingStarted = !wasBuffering && isBuffering;
+        final errorStarted = !wasError && isError;
 
       if (isBuffering) {
         _stallTimer ??= Timer(_stallTimeout, _reconnect);
@@ -43,11 +63,20 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
         _stallTimer = null;
       }
 
-      state = state.copyWith(
-        isPlaying: ps.playing,
-        isBuffering: isBuffering,
-        isError: isError,
-      );
+      if (shouldClearNowPlaying || bufferingStarted || errorStarted) {
+        state = state.copyWith(
+          isPlaying: ps.playing,
+          isBuffering: isBuffering,
+          isError: isError,
+          nowPlayingText: null,
+        );
+      } else {
+        state = state.copyWith(
+          isPlaying: ps.playing,
+          isBuffering: isBuffering,
+          isError: isError,
+        );
+      }
     });
 
     _metaSub = _handler.icyMetadataStream.listen((text) {
@@ -65,6 +94,35 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
       if (!state.isBuffering || state.station == null) return;
       final hasConnection = results.any((r) => r != ConnectivityResult.none);
       if (hasConnection) _reconnect();
+    });
+  }
+
+  void _listenMediaItem() {
+    _mediaItemSub = _handler.mediaItem.listen((item) async {
+      if (item == null) return;
+
+      final stationId = int.tryParse(item.id) ?? (item.extras?['stationId'] as int?);
+      if (stationId == null) return;
+
+      // Only refresh if station actually changed.
+      if (state.station?.id == stationId) return;
+
+      final station = await _stationRepo.getStationById(stationId);
+      if (station == null) return;
+
+      // External start (Android Auto, notification browse) should update UI.
+      _stallTimer?.cancel();
+      _stallTimer = null;
+
+      state = state.copyWith(
+        station: station,
+        nowPlayingText: null,
+      );
+
+      _favSub?.cancel();
+      _favSub = _favouriteRepo.watchIsFavourite(station.id).listen((isFav) {
+        state = state.copyWith(isFavourite: isFav);
+      });
     });
   }
 
@@ -95,7 +153,8 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
 
     // Set notification immediately so it appears as soon as playback starts
     _handler.updateNowPlaying(
-      id: station.streamUrl,
+      stationId: station.id,
+      streamUrl: station.streamUrl,
       title: station.name,
       artUrl: station.logoUrl,
     );
@@ -152,6 +211,7 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
     _favSub?.cancel();
     _skipNextSub?.cancel();
     _skipPrevSub?.cancel();
+    _mediaItemSub?.cancel();
     super.dispose();
   }
 }
@@ -160,6 +220,7 @@ final playerNotifierProvider =
     StateNotifierProvider<PlayerNotifier, PlayerUiState>((ref) {
   return PlayerNotifier(
     ref.watch(audioHandlerProvider),
+    ref.watch(stationRepositoryProvider),
     ref.watch(favouriteRepositoryProvider),
     (station) => ref.read(recentlyVisitedProvider.notifier).visit(station),
   );

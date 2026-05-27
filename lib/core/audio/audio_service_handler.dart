@@ -18,6 +18,15 @@ class RadioAudioHandler extends BaseAudioHandler {
   final StationRepository _stationRepo;
   final FavouriteRepository _favouriteRepo;
 
+  // Incremented to invalidate any in-flight playUrl operation.
+  // This prevents a late setAudioSource/play from resuming after the user
+  // has paused/stopped.
+  int _connectToken = 0;
+
+  // Serialize playUrl calls to avoid overlapping setAudioSource/play operations
+  // which can lead to late/stale ICY metadata surfacing after a source swap.
+  Future<void> _playUrlSerial = Future.value();
+
   // Track last broadcast values to avoid redundant notification redraws
   ProcessingState? _lastProcessingState;
   bool? _lastPlaying;
@@ -49,40 +58,63 @@ class RadioAudioHandler extends BaseAudioHandler {
   /// Call this whenever a new station starts playing to update the
   /// notification's title, artwork, and lock-screen metadata.
   void updateNowPlaying({
-    required String id,
+    required int stationId,
+    required String streamUrl,
     required String title,
     String? artUrl,
   }) {
     final defaultPlaceholder = Uri.parse('android.resource://com.radiov2.radiov2_android/drawable/radiov2_logo');
     mediaItem.add(MediaItem(
-      id: id,
+      id: stationId.toString(),
       title: title,
+      extras: {
+        'stationId': stationId,
+        'streamUrl': streamUrl,
+      },
       artUri: (artUrl != null && artUrl.isNotEmpty) ? Uri.tryParse(artUrl) : defaultPlaceholder,
     ));
   }
 
   Future<void> playUrl(String url) async {
+    final token = ++_connectToken;
     icyMetadataStream.add(null);
-    try {
-      await _player.setAudioSource(
-        AudioSource.uri(Uri.parse(url), headers: {'Icy-MetaData': '1'}),
-      );
-      await _player.play();
-    } catch (_) {
-      playbackState.add(playbackState.value.copyWith(
-        processingState: AudioProcessingState.error,
-      ));
-    }
+    _playUrlSerial = _playUrlSerial.then((_) async {
+      if (token != _connectToken) return;
+      try {
+        await _player.setAudioSource(
+          AudioSource.uri(Uri.parse(url), headers: {'Icy-MetaData': '1'}),
+        );
+        if (token != _connectToken) return;
+        await _player.play();
+      } catch (_) {
+        playbackState.add(playbackState.value.copyWith(
+          processingState: AudioProcessingState.error,
+        ));
+      }
+    });
+    return _playUrlSerial;
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    final extras = mediaItem.value?.extras;
+    final url = extras?['streamUrl'];
+    if (url is! String || url.isEmpty) return;
+
+    // Live radio: always reconnect fresh to avoid resuming stale buffered audio.
+    await playUrl(url);
+  }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    // Live radio: "pause" is a full disconnect.
+    await stop();
+  }
 
   @override
   Future<void> stop() async {
+    _connectToken++;
+    icyMetadataStream.add(null);
     await _player.stop();
     await super.stop();
   }
@@ -96,21 +128,29 @@ class RadioAudioHandler extends BaseAudioHandler {
   Future<void> skipToPrevious() async => skipToPreviousStream.add(null);
 
   void _broadcastPlaybackState(PlaybackEvent event) {
-    // ICY metadata (now-playing title) arrives via PlaybackEvent
-    final icyTitle = event.icyMetadata?.info?.title;
+    final isPlaying = _player.playing;
+    final processingState = event.processingState;
+
+    // ICY metadata can briefly report stale values during source swaps or
+    // buffering. Only surface it once the player is in a steady ready state.
+    final rawIcyTitle =
+        processingState == ProcessingState.ready ? event.icyMetadata?.info?.title : null;
+    final icyTitle = (rawIcyTitle != null && rawIcyTitle.trim().isNotEmpty)
+        ? rawIcyTitle
+        : null;
+
     if (icyTitle != icyMetadataStream.value) {
       icyMetadataStream.add(icyTitle);
-      // Reflect ICY text as notification subtitle
+
+      // Reflect ICY text as notification subtitle. Use a space when blank to
+      // avoid Android Auto/OS defaults overriding the field.
       final current = mediaItem.value;
       if (current != null) {
         mediaItem.add(current.copyWith(
-          artist: (icyTitle != null && icyTitle.isNotEmpty) ? icyTitle : null,
+          artist: icyTitle ?? ' ',
         ));
       }
     }
-
-    final isPlaying = _player.playing;
-    final processingState = _player.processingState;
 
     // Skip broadcast when nothing meaningful changed — avoids redundant
     // notification redraws on every buffer tick during live stream playback
