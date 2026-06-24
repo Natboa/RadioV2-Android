@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../core/designsystem/app_notification.dart';
 import '../../core/designsystem/colors.dart';
 import 'settings_notifier.dart';
 import 'settings_state.dart';
@@ -84,24 +85,14 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showImportResult(BuildContext context, SettingsUiState state) {
     if (state is SettingsImportDone) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            state.added == 0
-                ? 'No matching stations found in the file.'
-                : '${state.added} station${state.added == 1 ? '' : 's'} added to favourites.',
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
+      AppNotification.show(
+        context,
+        state.added == 0
+            ? 'No matching stations found in the file.'
+            : '${state.added} station${state.added == 1 ? '' : 's'} added to favourites.',
       );
     } else if (state is SettingsImportError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.message),
-          backgroundColor: RadioV2Colors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppNotification.show(context, state.message, isError: true);
     }
   }
 
@@ -111,13 +102,7 @@ class SettingsScreen extends ConsumerWidget {
     if (!context.mounted) return;
     final state = ref.read(settingsNotifierProvider);
     if (state is SettingsExportError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.message),
-          backgroundColor: RadioV2Colors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppNotification.show(context, state.message, isError: true);
     }
   }
 }
