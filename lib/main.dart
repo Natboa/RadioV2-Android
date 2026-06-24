@@ -15,10 +15,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize dependencies
-  final (dbFile, isFreshInstall) = await DatabaseInitializer.getOrCopyDatabase();
+  final (dbFile, favouriteIdsToRestore) = await DatabaseInitializer.getOrCopyDatabase();
   final db = AppDatabase(dbFile);
-  if (isFreshInstall) {
-    await db.customStatement('DELETE FROM favourites');
+  if (favouriteIdsToRestore.isNotEmpty) {
+    for (final id in favouriteIdsToRestore) {
+      await db.customStatement(
+        'INSERT OR IGNORE INTO favourites (station_id) VALUES (?)',
+        [id],
+      );
+    }
   }
 
   final stationRepo = StationRepositoryImpl(db);

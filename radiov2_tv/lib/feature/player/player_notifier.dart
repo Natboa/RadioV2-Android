@@ -23,6 +23,9 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   StreamSubscription? _skipNextSub;
   StreamSubscription? _skipPrevSub;
   StreamSubscription? _mediaItemSub;
+  // True from the moment playStation() is called until the new stream starts
+  // loading. Suppresses stale error events from the previous stream.
+  bool _switching = false;
 
   PlayerNotifier(
     this._handler,
@@ -47,6 +50,14 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
       final isBuffering =
           ps.processingState == AudioProcessingState.loading ||
           ps.processingState == AudioProcessingState.buffering;
+
+      // Clear the switching guard once the new stream starts loading/playing.
+      if (_switching && (isBuffering || ps.playing)) {
+        _switching = false;
+      }
+
+      // Ignore error events that belong to the previous stream.
+      if (_switching && isError) return;
 
       final startedPlaying = !wasPlaying && ps.playing;
       final shouldClearNowPlaying =
@@ -121,6 +132,7 @@ class PlayerNotifier extends StateNotifier<PlayerUiState> {
   }
 
   Future<void> playStation(Station station, List<Station> playlist) async {
+    _switching = true;
     _onStationVisited(station);
     state = PlayerUiState(
       station: station,

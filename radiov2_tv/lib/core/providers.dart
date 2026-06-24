@@ -14,14 +14,19 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('sharedPreferencesProvider not overridden');
 });
 
-/// Async provider — copies the bundled DB on first launch.
-/// On a fresh install, clears any developer favourites baked into the asset DB.
+/// Async provider — copies the bundled DB on first launch, and re-copies it
+/// when the app version changes (i.e. a new DB was shipped), preserving favourites.
 final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
-  final (dbFile, isFreshInstall) =
+  final (dbFile, favouriteIdsToRestore) =
       await DatabaseInitializer.getOrCopyDatabase();
   final db = AppDatabase(dbFile);
-  if (isFreshInstall) {
-    await db.customStatement('DELETE FROM favourites');
+  if (favouriteIdsToRestore.isNotEmpty) {
+    for (final id in favouriteIdsToRestore) {
+      await db.customStatement(
+        'INSERT OR IGNORE INTO favourites (station_id) VALUES (?)',
+        [id],
+      );
+    }
   }
   return db;
 });
