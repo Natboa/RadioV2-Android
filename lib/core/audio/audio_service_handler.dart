@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +48,18 @@ class RadioAudioHandler extends BaseAudioHandler {
     required FavouriteRepository favouriteRepository,
   })  : _stationRepo = repository,
         _favouriteRepo = favouriteRepository {
-    _player.playbackEventStream.listen(_broadcastPlaybackState);
+    _player.playbackEventStream.listen(
+      _broadcastPlaybackState,
+      // A bad/unsupported stream surfaces as an error on this stream. Without
+      // an onError handler it becomes an unhandled exception; instead, mark the
+      // player as errored so the UI clears the spinner and shows the offline
+      // banner.
+      onError: (Object _, StackTrace __) {
+        playbackState.add(playbackState.value.copyWith(
+          processingState: AudioProcessingState.error,
+        ));
+      },
+    );
     _initAudioSession();
   }
 
@@ -85,7 +98,12 @@ class RadioAudioHandler extends BaseAudioHandler {
           AudioSource.uri(Uri.parse(url), headers: {'Icy-MetaData': '1'}),
         );
         if (token != _connectToken) return;
-        await _player.play();
+        // Do NOT await: for a live stream, play() returns a Future that only
+        // completes when playback is paused/stopped — awaiting it here would
+        // block the _playUrlSerial chain forever and prevent switching stations.
+        // Swallow its error (a dead stream surfaces the failure via the
+        // playback event stream's onError instead) so it isn't unhandled.
+        unawaited(_player.play().catchError((_) {}));
       } catch (_) {
         playbackState.add(playbackState.value.copyWith(
           processingState: AudioProcessingState.error,
