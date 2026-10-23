@@ -21,7 +21,13 @@ Same Galaxy S25 (SM-S931B), Android 17; installed release v1.0.7 compared with a
 
 The script dismissed the keyboard, found actual station rows through the UI hierarchy and verified each station name in the Android media-session metadata. Navigation to the good station took 6.00 seconds before the fix and 6.45 seconds afterward. Times include adb polling overhead. One comparison per build; these are observed runs, not statistical percentiles. The older report's 70-second figure varied between runs.
 
-Further working-station checks in the test copy: 1.72 seconds for #lofi, 0.80 seconds for Chillout - Radios 100FM, and 1.48 seconds back to #lofi. Media-key and outage checks were interrupted when the user reported being on a phone call; no outage was initiated. Wi-Fi/data were confirmed enabled and media volume restored to 7. Those additional device checks remain unverified.
+Additional device checks passed:
+
+- Working station switches: 1.19 seconds to #lofi, 1.09 seconds to Chillout - Radios 100FM, 1.58 seconds back to #lofi.
+- Background media pause: stopped state observed after 0.06 seconds; media play reconnected after 0.97 seconds.
+- Full network outage for 45 seconds: PLAYING initially, BUFFERING at 11.4 seconds, CONNECTING at 25.4 seconds; no error while offline. After Wi-Fi/mobile data returned, playback resumed automatically in 2.48 seconds.
+
+Wi-Fi/mobile data were restored to enabled and media volume to 7. The separate test app was removed after verification; the original v1.0.7 installation remains. Call audio focus, physical headset controls and Bluetooth were not tested in this task.
 
 Tests were written before implementation. The inherited queue failed the pending-load switch, cancellation and deadline cases. Two additional tests first exposed ready-state replay and stopped playback-state bugs. Final verification:
 
@@ -36,6 +42,6 @@ python tools/audit/device_stall_verified.py com.radiov2.radiov2_android both
 python tools/audit/device_stall_verified.py com.radiov2.radiov2_android.stalltest both
 ```
 
-Each run temporarily lowers media volume and restores it. These checks navigate and play stations; avoid running during a call. The test APK is local at `build/RadioV2-stalltest.apk`. The test copy is stopped and remains installed for further verification.
+Each run temporarily lowers media volume and restores it. These checks navigate and play stations; avoid running during a call. The test APK is local at `build/RadioV2-stalltest.apk`. The test copy was removed after verification; install the local APK again to repeat these checks.
 
 No version bump, release tag or GitHub release is part of this change.
