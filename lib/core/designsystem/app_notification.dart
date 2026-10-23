@@ -31,7 +31,12 @@ class AppNotification {
           children: [
             const Icon(Icons.keyboard_double_arrow_left, size: 18, color: Colors.white70),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: RadioV2Colors.onSurface),
+              ),
+            ),
             const SizedBox(width: 8),
             const Icon(Icons.keyboard_double_arrow_right, size: 18, color: Colors.white70),
           ],

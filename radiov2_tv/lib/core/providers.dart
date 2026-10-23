@@ -17,18 +17,10 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 /// Async provider — copies the bundled DB on first launch, and re-copies it
 /// when the app version changes (i.e. a new DB was shipped), preserving favourites.
 final appDatabaseProvider = FutureProvider<AppDatabase>((ref) async {
-  final (dbFile, favouriteIdsToRestore) =
-      await DatabaseInitializer.getOrCopyDatabase();
-  final db = AppDatabase(dbFile);
-  if (favouriteIdsToRestore.isNotEmpty) {
-    for (final id in favouriteIdsToRestore) {
-      await db.customStatement(
-        'INSERT OR IGNORE INTO favourites (station_id) VALUES (?)',
-        [id],
-      );
-    }
-  }
-  return db;
+  // After an app update this swaps in the new bundled DB and has already
+  // restored the user's favourites by the time it returns.
+  final dbFile = await DatabaseInitializer.getOrCopyDatabase();
+  return AppDatabase(dbFile);
 });
 
 final stationRepositoryProvider = Provider<StationRepository>((ref) {

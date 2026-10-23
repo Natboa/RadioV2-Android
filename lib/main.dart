@@ -8,23 +8,15 @@ import 'core/providers.dart';
 import 'core/database/app_database.dart';
 import 'core/data/datasource/database_initializer.dart';
 import 'core/data/repository/station_repository_impl.dart';
-
 import 'core/data/repository/favourite_repository_impl.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize dependencies
-  final (dbFile, favouriteIdsToRestore) = await DatabaseInitializer.getOrCopyDatabase();
+  // After an app update this swaps in the new bundled DB and has already
+  // restored the user's favourites by the time it returns.
+  final dbFile = await DatabaseInitializer.getOrCopyDatabase();
   final db = AppDatabase(dbFile);
-  if (favouriteIdsToRestore.isNotEmpty) {
-    for (final id in favouriteIdsToRestore) {
-      await db.customStatement(
-        'INSERT OR IGNORE INTO favourites (station_id) VALUES (?)',
-        [id],
-      );
-    }
-  }
 
   final stationRepo = StationRepositoryImpl(db);
   final favouriteRepo = FavouriteRepositoryImpl(db);
