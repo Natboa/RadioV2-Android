@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/data/repository/station_repository.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/providers.dart';
+import '../../../core/images/station_artwork_cache.dart';
 import 'group_detail_state.dart';
 
 const _pageSize = 30;
@@ -13,9 +14,13 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
   final int groupId;
   bool _isLoadingMore = false;
   Timer? _debounce;
+  final Set<String> Function() _artworkFailures;
+  Set<String> _artworkSnapshot = const {};
 
-  GroupDetailNotifier(this._repo, this._db, this.groupId)
-      : super(const GroupDetailLoading()) {
+  GroupDetailNotifier(this._repo, this._db, this.groupId,
+      {Set<String> Function()? artworkFailures})
+      : _artworkFailures = artworkFailures ?? (() => const {}),
+        super(const GroupDetailLoading()) {
     _load();
   }
 
@@ -45,7 +50,9 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
         current.stations.length,
         _pageSize,
         query: query,
+        unavailableArtworkUrls: _artworkSnapshot,
       );
+      if (!mounted) return;
       state = current.copyWith(
         stations: [...current.stations, ...more],
         hasMore: more.length == _pageSize,
@@ -67,24 +74,33 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
         0,
         _pageSize,
         query: dbQuery,
+        unavailableArtworkUrls: _artworkSnapshot,
       );
+      if (!mounted) return;
       state = current.copyWith(
         searchQuery: query,
         stations: stations,
         hasMore: stations.length == _pageSize,
       );
     } catch (e) {
-      state = GroupDetailError(e.toString());
+      if (mounted) state = GroupDetailError(e.toString());
     }
   }
 
   Future<void> _load() async {
+    // Freeze once per open/explicit refresh, including every pagination/search
+    // request. Late image failures cannot move or duplicate visible stations.
+    _artworkSnapshot = Set.unmodifiable(_artworkFailures());
     state = const GroupDetailLoading();
     try {
       final groupRow = await _db.groupDao.getGroupById(groupId);
+      if (!mounted) return;
       final groupName = groupRow?.name ?? 'Group';
-      final featured = await _repo.getFeaturedByGroup(groupId);
-      final stations = await _repo.getStationsByGroup(groupId, 0, _pageSize);
+      final featured = await _repo.getFeaturedByGroup(groupId,
+          unavailableArtworkUrls: _artworkSnapshot);
+      final stations = await _repo.getStationsByGroup(groupId, 0, _pageSize,
+          unavailableArtworkUrls: _artworkSnapshot);
+      if (!mounted) return;
       state = GroupDetailSuccess(
         groupName: groupName,
         featured: featured,
@@ -92,19 +108,17 @@ class GroupDetailNotifier extends StateNotifier<GroupDetailUiState> {
         hasMore: stations.length == _pageSize,
       );
     } catch (e) {
-      state = GroupDetailError(e.toString());
+      if (mounted) state = GroupDetailError(e.toString());
     }
   }
 }
 
-final groupDetailNotifierProvider = StateNotifierProvider.family<
-  GroupDetailNotifier,
-  GroupDetailUiState,
-  int
->((ref, groupId) {
+final groupDetailNotifierProvider = StateNotifierProvider.autoDispose
+    .family<GroupDetailNotifier, GroupDetailUiState, int>((ref, groupId) {
   return GroupDetailNotifier(
     ref.watch(stationRepositoryProvider),
     ref.watch(appDatabaseProvider),
     groupId,
+    artworkFailures: () => ref.read(stationArtworkCacheProvider).snapshot,
   );
 });

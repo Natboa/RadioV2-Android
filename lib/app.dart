@@ -1,6 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/designsystem/theme.dart';
+import 'core/designsystem/theme_mode.dart';
+import 'core/designsystem/motion.dart';
 import 'navigation/app_router.dart';
 
 class RadioV2App extends ConsumerWidget {
@@ -12,7 +14,10 @@ class RadioV2App extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'RadioV2',
-      theme: buildRadioV2Theme(),
+      theme: buildRadioV2Theme(brightness: Brightness.light),
+      darkTheme: buildRadioV2Theme(),
+      themeMode: ref.watch(themeModeProvider),
+      themeAnimationDuration: RadioMotion.duration(context),
       debugShowCheckedModeBanner: false,
       routerConfig: router,
     );

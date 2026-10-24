@@ -1,103 +1,39 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../designsystem/colors.dart';
 
-/// Animated equalizer bars — 5 bars that bounce independently.
-/// Matches the desktop SoundbarAnimation control.
-/// Set [isAnimating] to true while a station is playing.
-class SoundBars extends StatefulWidget {
+/// A quiet signal mark, not a simulated visualizer. No repeating ticker, even
+/// when its row is cached just outside the viewport.
+class SoundBars extends StatelessWidget {
   final bool isAnimating;
-
   const SoundBars({super.key, required this.isAnimating});
-
   @override
-  State<SoundBars> createState() => _SoundBarsState();
+  Widget build(BuildContext context) => ExcludeSemantics(
+          child: SizedBox(
+        width: 15,
+        height: 14,
+        child: CustomPaint(
+            painter: _SignalPainter(
+                Theme.of(context).colorScheme.primary, isAnimating)),
+      ));
 }
 
-class _SoundBarsState extends State<SoundBars>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  late final AnimationController _controller;
-
-  // Phase offsets per bar (radians) — gives each bar a different rhythm
-  static const _phases = [0.0, 1.1, 2.3, 0.7, 1.8];
-  static const _barWidth = 3.0;
-  static const _barGap = 2.5;
-  static const _maxH = 16.0;
-  static const _minH = 3.0;
-
+class _SignalPainter extends CustomPainter {
+  final Color color;
+  final bool active;
+  _SignalPainter(this.color, this.active);
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    if (widget.isAnimating) _controller.repeat();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (widget.isAnimating && !_controller.isAnimating) _controller.repeat();
-    } else {
-      _controller.stop();
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    const heights = [5.0, 11.0, 14.0, 8.0];
+    for (var i = 0; i < heights.length; i++) {
+      final h = active ? heights[i] : 3.0;
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(i * 4, (14 - h) / 2, 2, h),
+              const Radius.circular(1)),
+          paint);
     }
   }
 
   @override
-  void didUpdateWidget(SoundBars old) {
-    super.didUpdateWidget(old);
-    if (widget.isAnimating && !_controller.isAnimating) {
-      _controller.repeat();
-    } else if (!widget.isAnimating && _controller.isAnimating) {
-      _controller.animateTo(0, duration: const Duration(milliseconds: 200));
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final totalW =
-        _barWidth * _phases.length + _barGap * (_phases.length - 1);
-
-    return RepaintBoundary(
-      child: ExcludeSemantics(
-        child: SizedBox(
-          width: totalW,
-          height: _maxH,
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (_, __) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(_phases.length, (i) {
-                  final t = _controller.value * 2 * math.pi + _phases[i];
-                  final h =
-                      _minH + (_maxH - _minH) * (math.sin(t) * 0.5 + 0.5);
-                  return Padding(
-                    padding: EdgeInsets.only(left: i == 0 ? 0 : _barGap),
-                    child: Container(
-                      width: _barWidth,
-                      height: h,
-                      decoration: BoxDecoration(
-                        color: RadioV2Colors.accent,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  );
-                }),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
+  bool shouldRepaint(_SignalPainter old) =>
+      old.color != color || old.active != active;
 }

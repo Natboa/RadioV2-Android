@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-23",
+  "title": "Design System: RadioV2 Android",
+  "extensions": {
+    "colorMeta": {
+      "seed": {
+        "role": "primary",
+        "displayName": "RadioV2 magenta",
+        "canonical": "#E81C9B"
+      },
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Day magenta",
+        "canonical": "#B60077"
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Night magenta",
+        "canonical": "#FFAFD2"
+      },
+      "surface-light": {
+        "role": "neutral",
+        "displayName": "Light canvas",
+        "canonical": "#FAF8F9"
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Charcoal canvas",
+        "canonical": "#121215"
+      }
+    },
+    "motion": [
+      {
+        "name": "feedback",
+        "value": "160ms cubic-bezier(.23,1,.32,1)",
+        "purpose": "Interruptible play/pause state feedback."
+      },
+      {
+        "name": "player-open",
+        "value": "280ms cubic-bezier(.23,1,.32,1)",
+        "purpose": "Artwork continuity and upward expansion."
+      },
+      {
+        "name": "player-close",
+        "value": "240ms cubic-bezier(.23,1,.32,1)",
+        "purpose": "Return to the player dock."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail-and-player-columns",
+        "value": "700dp"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Play button",
+      "kind": "button",
+      "refersTo": "play-button",
+      "description": "Native filled circle; web snippet is a documentation swatch.",
+      "html": "<button aria-label=\"Play\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 5v14l11-7z\"/></svg></button>",
+      "css": "button{width:48px;height:48px;padding:0;border:0;border-radius:50%;background:#B60077;color:#fff;display:grid;place-items:center}svg{width:28px;height:28px;fill:currentColor}button:focus-visible{outline:2px solid #B60077;outline-offset:3px}"
+    },
+    {
+      "name": "Station search",
+      "kind": "input",
+      "description": "Theme-aware search surface with a visible focus border.",
+      "html": "<input aria-label=\"Find a station\" placeholder=\"Find a station\"/>",
+      "css": "input{box-sizing:border-box;width:100%;padding:16px 18px;border:1.5px solid transparent;border-radius:18px;background:#F3F0F2;color:#211D22;font:16px Roboto,sans-serif}input::placeholder{color:#635B65}input:focus{outline:0;border-color:#B60077}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Quiet library, expressive player",
+    "overview": "The station library is calm and easy to scan. Existing genre sleeves provide the rich colour and texture. The interface uses neutral tonal layers, strong headings, and deliberate separation between sections. Android controls, system Back and touch conventions remain familiar.",
+    "keyCharacteristics": [
+      "Existing square artwork, contained and decoded at its display size.",
+      "Magenta-derived functional accents on neutral light and dark surfaces.",
+      "Foreground-coloured favourite hearts.",
+      "Lazy shelves, readable rows and quick search."
+    ],
+    "rules": [
+      {
+        "name": "The Content Colour Rule",
+        "body": "Genre artwork keeps its original colours. UI accent appears on primary playback, selection, focus and connection status. Favourite hearts use onSurface in both saved and unsaved states.",
+        "section": "colors"
+      },
+      {
+        "name": "The Recoverable Station Rule",
+        "body": "An unavailable station receives a compact neutral message with Retry and a calm inline player state. Error colours remain available for actual errors.",
+        "section": "colors"
+      },
+      {
+        "name": "The Full Name Rule",
+        "body": "Rows allow two lines and the expanded player allows three. Truncation preserves accessible names. Text scaling is never clamped; short screens can scroll the player.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do use semantic theme roles and preserve Android system media/notification controls.",
+      "Do keep lazy builders, pagination, keyed items, bounded image decoding and the existing disk cache.",
+      "Do verify native rendering, larger text and performance on real hardware before sign-off."
+    ],
+    "donts": [
+      "Don't crop genre artwork, tint it, zoom it, or decode every group at startup.",
+      "Don't use red hearts or alarming offline banners.",
+      "Don't add decorative perpetual motion, list-wide entrance staggering, blur or shadows to scrolling items."
+    ]
+  }
+}

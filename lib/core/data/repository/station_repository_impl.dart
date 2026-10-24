@@ -25,19 +25,23 @@ class StationRepositoryImpl implements StationRepository {
     int offset,
     int limit, {
     String? query,
+    Set<String> unavailableArtworkUrls = const {},
   }) async {
     final rows = await _db.stationDao.getStationsByGroup(
       groupId,
       offset,
       limit,
       query: query,
+      unavailableArtworkUrls: unavailableArtworkUrls,
     );
     return rows.map(_mapStation).toList();
   }
 
   @override
-  Future<List<Station>> getFeaturedByGroup(int groupId) async {
-    final rows = await _db.stationDao.getFeaturedByGroup(groupId);
+  Future<List<Station>> getFeaturedByGroup(int groupId,
+      {Set<String> unavailableArtworkUrls = const {}}) async {
+    final rows = await _db.stationDao.getFeaturedByGroup(groupId,
+        unavailableArtworkUrls: unavailableArtworkUrls);
     return rows.map(_mapStation).toList();
   }
 
@@ -73,13 +77,13 @@ class StationRepositoryImpl implements StationRepository {
       final catId = gwc.group.categoryId;
       if (catId == null) continue;
       byCategory.putIfAbsent(catId, () => []).add(
-        Group(
-          id: gwc.group.id,
-          name: gwc.group.name,
-          categoryId: gwc.group.categoryId,
-          stationCount: gwc.stationCount,
-        ),
-      );
+            Group(
+              id: gwc.group.id,
+              name: gwc.group.name,
+              categoryId: gwc.group.categoryId,
+              stationCount: gwc.stationCount,
+            ),
+          );
     }
 
     return [
@@ -100,11 +104,11 @@ class StationRepositoryImpl implements StationRepository {
       _db.stationDao.getStationIdsByStreamUrls(urls);
 
   Station _mapStation(db.Station row) => Station(
-    id: row.id,
-    name: row.name,
-    streamUrl: row.streamUrl,
-    logoUrl: row.logoUrl,
-    groupId: row.groupId,
-    isFeatured: row.isFeatured,
-  );
+        id: row.id,
+        name: row.name,
+        streamUrl: row.streamUrl,
+        logoUrl: row.logoUrl,
+        groupId: row.groupId,
+        isFeatured: row.isFeatured,
+      );
 }

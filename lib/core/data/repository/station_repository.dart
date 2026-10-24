@@ -10,9 +10,11 @@ abstract interface class StationRepository {
     int offset,
     int limit, {
     String? query,
+    Set<String> unavailableArtworkUrls = const {},
   });
 
-  Future<List<Station>> getFeaturedByGroup(int groupId);
+  Future<List<Station>> getFeaturedByGroup(int groupId,
+      {Set<String> unavailableArtworkUrls = const {}});
 
   Future<Station?> getStationById(int id);
 

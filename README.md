@@ -3,14 +3,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/version-1.0.7-blue?style=flat-square" alt="Version"/></a>
+  <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/version-1.0.8-blue?style=flat-square" alt="Version"/></a>
   <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/platform-Android%208%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android"/></a>
   <a href="https://github.com/Natboa/RadioV2-Android/releases"><img src="https://img.shields.io/badge/platform-Android%20TV-3DDC84?style=flat-square&logo=androidtv&logoColor=white" alt="Android TV"/></a>
   <img src="https://img.shields.io/badge/built%20with-Flutter-54C5F8?style=flat-square&logo=flutter&logoColor=white" alt="Flutter"/>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"/></a>
 </p>
 
-<h3 align="center">A modern Android internet radio player with a clean dark UI.</h3>
+<h3 align="center">A modern Android internet radio player with light and dark themes.</h3>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Also%20available%20on-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Available on Windows"/>
@@ -51,10 +51,12 @@ RadioV2 Android is the mobile companion to the RadioV2 desktop app. It lets you 
 - Background playback — music keeps playing when the app is minimized or the screen is off
 - Media notification with artwork, play/pause, next, and previous controls
 - Lock screen controls
-- Animated equalizer bars on the currently playing station
+- Clear playback states and interruptible player transitions that respect reduced motion
 - Android Auto support — browse favourites and control playback from your car
 - Android TV support — full D-pad navigable TV interface with side rail, discover, browse, and favourites
-- Dark theme
+- Magenta-accented light and dark themes with a saved system/light/dark appearance choice
+- Lazy genre browsing, bounded artwork decoding and cached station images
+- Neutral initials for unavailable artwork and stable group ordering as image failures are learned
 
 ## Installation
 

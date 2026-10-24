@@ -12,6 +12,8 @@ build/
 *.iws
 .idea/
 .DS_Store
+__pycache__/
+*.pyc
 
 # Android
 android/.gradle/

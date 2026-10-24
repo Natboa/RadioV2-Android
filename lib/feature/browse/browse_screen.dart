@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/model/station.dart';
 import '../../core/providers.dart';
+import '../../core/ui/widgets/content_state.dart';
+import '../../core/ui/widgets/radio_search_field.dart';
 import '../../core/ui/widgets/station_list_item.dart';
-import '../../core/designsystem/colors.dart';
 import '../../navigation/app_destinations.dart';
 import '../player/player_notifier.dart';
 import '../player/player_state.dart';
@@ -13,259 +14,150 @@ import 'browse_state.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
-
   @override
   ConsumerState<BrowseScreen> createState() => _BrowseScreenState();
 }
 
 class _BrowseScreenState extends ConsumerState<BrowseScreen> {
-  final _searchController = TextEditingController();
-  final _scrollController = ScrollController();
+  final _search = TextEditingController();
+  final _scroll = ScrollController();
   String _query = '';
-
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _scroll.addListener(_loadMore);
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+  void _loadMore() {
+    if (_query.isNotEmpty && _scroll.position.extentAfter < 300) {
       ref.read(browseNotifierProvider.notifier).loadMore();
     }
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
-    _scrollController.dispose();
+    _search.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final playerState = ref.watch(playerNotifierProvider);
-    final recentlyVisited = ref.watch(recentlyVisitedProvider);
-
+    final player = ref.watch(playerNotifierProvider);
+    final recent = ref.watch(recentlyVisitedProvider);
+    final result = _query.isEmpty ? null : ref.watch(browseNotifierProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Browse'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push(AppRoutes.settings),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Search stations…',
-                prefixIcon: Icon(Icons.search),
-              ),
+      appBar: AppBar(title: const Text('Browse'), actions: [
+        IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.tune_rounded),
+            onPressed: () => context.push(AppRoutes.settings)),
+        const SizedBox(width: 12),
+      ]),
+      body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+            child: RadioSearchField(
+              controller: _search,
+              hint: 'Find a station',
               onChanged: (q) {
-                setState(() => _query = q);
+                setState(() => _query = q.trim());
                 ref.read(browseNotifierProvider.notifier).onSearch(q);
+                if (_scroll.hasClients) _scroll.jumpTo(0);
               },
-            ),
-          ),
-        ),
-      ),
-      body: _query.isEmpty
-          ? _RecentlyVisitedView(
-              stations: recentlyVisited,
-              playerState: playerState,
-              scrollController: _scrollController,
-              onTap: (station) => ref
-                  .read(playerNotifierProvider.notifier)
-                  .playStation(station, recentlyVisited),
-              onFavouriteTap: (id) => ref
-                  .read(playerNotifierProvider.notifier)
-                  .toggleFavourite(id),
-            )
-          : _SearchResultsView(
-              scrollController: _scrollController,
-              playerState: playerState,
-              onRetry: () => ref.read(browseNotifierProvider.notifier).retry(),
-              onTap: (station, stations) => ref
-                  .read(playerNotifierProvider.notifier)
-                  .playStation(station, stations),
-              onFavouriteTap: (id) => ref
-                  .read(playerNotifierProvider.notifier)
-                  .toggleFavourite(id),
-            ),
+            )),
+        Expanded(
+            child: _query.isEmpty
+                ? (recent.isEmpty
+                    ? ContentState(
+                        icon: Icons.radio_rounded,
+                        title: 'Your next favourite is out there',
+                        message:
+                            'Search for a station, or explore a sound in Discover.',
+                        actionLabel: 'Explore stations',
+                        onAction: () => context.go(AppRoutes.discover),
+                      )
+                    : _list(recent, player,
+                        heading: 'Back in rotation',
+                        detail: 'Your recently played stations'))
+                : switch (result!) {
+                    BrowseLoading() =>
+                      const Center(child: CircularProgressIndicator()),
+                    BrowseError() => ContentState(
+                        icon: Icons.cloud_off_rounded,
+                        title: 'Couldn’t load stations',
+                        message: 'Try your search again.',
+                        actionLabel: 'Try again',
+                        onAction: () =>
+                            ref.read(browseNotifierProvider.notifier).retry()),
+                    BrowseEmpty() => ContentState(
+                        icon: Icons.search_off_rounded,
+                        title: 'No stations found',
+                        message: 'Try a different name or a shorter search.',
+                        actionLabel: 'Clear search',
+                        onAction: () {
+                          _search.clear();
+                          setState(() => _query = '');
+                          ref
+                              .read(browseNotifierProvider.notifier)
+                              .onSearch('');
+                        }),
+                    BrowseSuccess(:final stations, :final hasMore) => _list(
+                        stations, player,
+                        heading: 'Search results',
+                        detail:
+                            '${stations.length}${hasMore ? '+' : ''} ${stations.length == 1 && !hasMore ? 'station' : 'stations'}',
+                        hasMore: hasMore),
+                  }),
+      ]),
     );
   }
-}
 
-class _RecentlyVisitedView extends ConsumerWidget {
-  final List<Station> stations;
-  final PlayerUiState playerState;
-  final ScrollController scrollController;
-  final void Function(Station) onTap;
-  final void Function(int) onFavouriteTap;
-
-  const _RecentlyVisitedView({
-    required this.stations,
-    required this.playerState,
-    required this.scrollController,
-    required this.onTap,
-    required this.onFavouriteTap,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (stations.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.radio,
-              size: 64,
-              color: RadioV2Colors.onSurfaceVariant,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No stations visited yet',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: RadioV2Colors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Discover and play stations to see them here',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: RadioV2Colors.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
-
+  Widget _list(List<Station> stations, PlayerUiState player,
+      {required String heading, required String detail, bool hasMore = false}) {
     return ListView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.only(bottom: 88),
-      itemCount: stations.length + 1,
+      key: PageStorageKey(_query.isEmpty ? 'history' : 'station-search'),
+      controller: _scroll,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.only(bottom: 24),
+      itemCount: stations.length + 1 + (hasMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              'Recently Visited',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          );
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(heading,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 4),
+                    Text(detail, style: Theme.of(context).textTheme.bodySmall),
+                  ]));
         }
-        final station = stations[index - 1];
-        final isSelected = playerState.maybeWhen(
-          active: (s, _, __, ___, ____) => s.id == station.id,
-          orElse: () => false,
-        );
-        final isPlaying = playerState.maybeWhen(
-          active: (s, playing, _, __, ___) => s.id == station.id && playing,
-          orElse: () => false,
-        );
+        if (index > stations.length) {
+          return const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: CircularProgressIndicator()));
+        }
+        final s = stations[index - 1];
         return StationListItem(
-          station: station,
-          isSelected: isSelected,
-          isPlaying: isPlaying,
-          onTap: () => onTap(station),
-          onFavouriteTap: () => onFavouriteTap(station.id),
-        );
+            key: ValueKey(s.id),
+            station: s,
+            isSelected: player.station?.id == s.id,
+            isPlaying: player.station?.id == s.id &&
+                player.isPlaying &&
+                !player.isBuffering &&
+                !player.isError,
+            onTap: () {
+              FocusScope.of(context).unfocus();
+              ref
+                  .read(playerNotifierProvider.notifier)
+                  .playStation(s, stations);
+            },
+            onFavouriteTap: () => ref
+                .read(playerNotifierProvider.notifier)
+                .toggleFavourite(s.id));
       },
-    );
-  }
-}
-
-class _SearchResultsView extends ConsumerWidget {
-  final ScrollController scrollController;
-  final PlayerUiState playerState;
-  final VoidCallback onRetry;
-  final void Function(Station, List<Station>) onTap;
-  final void Function(int) onFavouriteTap;
-
-  const _SearchResultsView({
-    required this.scrollController,
-    required this.playerState,
-    required this.onRetry,
-    required this.onTap,
-    required this.onFavouriteTap,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(browseNotifierProvider);
-    return switch (state) {
-      BrowseLoading() => const Center(child: CircularProgressIndicator()),
-      BrowseError(:final message) => _ErrorView(
-        message: message,
-        onRetry: onRetry,
-      ),
-      BrowseEmpty(:final query) => Center(
-        child: Text(
-          'No results for "$query"',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ),
-      BrowseSuccess(:final stations, :final hasMore) => ListView.builder(
-        controller: scrollController,
-        padding: const EdgeInsets.only(bottom: 88),
-        itemCount: stations.length + (hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == stations.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-          final station = stations[index];
-          final isSelected = playerState.maybeWhen(
-            active: (s, _, __, ___, ____) => s.id == station.id,
-            orElse: () => false,
-          );
-          final isPlaying = playerState.maybeWhen(
-            active: (s, playing, _, __, ___) => s.id == station.id && playing,
-            orElse: () => false,
-          );
-          return StationListItem(
-            station: station,
-            isSelected: isSelected,
-            isPlaying: isPlaying,
-            onTap: () => onTap(station, stations),
-            onFavouriteTap: () => onFavouriteTap(station.id),
-          );
-        },
-      ),
-    };
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, color: RadioV2Colors.error, size: 48),
-          const SizedBox(height: 12),
-          Text(message, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: onRetry, child: const Text('Retry')),
-        ],
-      ),
     );
   }
 }

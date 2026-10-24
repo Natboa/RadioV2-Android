@@ -29,7 +29,10 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.radiov2.radiov2_android"
+        applicationId = if (providers.environmentVariable("RADIO_DESIGN_TEST").orNull == "1")
+            "com.radiov2.radiov2_android.designtest" else "com.radiov2.radiov2_android"
+        manifestPlaceholders["appLabel"] = if (providers.environmentVariable("RADIO_DESIGN_TEST").orNull == "1")
+            "RadioV2 Design" else "RadioV2"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 26
