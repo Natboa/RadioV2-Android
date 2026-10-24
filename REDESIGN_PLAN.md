@@ -53,7 +53,9 @@ The user's later instruction "commit push and publish" supersedes the earlier le
 - [x] Bump both version manifests and README; preserve unrelated local audits/instructions.
 - [x] Run final tests/analyzer and build signed production phone/TV APKs without test-package/performance flags:60 tests pass, analyzer clean, both release builds succeed.
 - [x] Verify package IDs, versions, signing and artifact hashes: production IDs,1.0.8/code10 phone and code6 TV, non-debuggable, previous-release signer matches, performance probe absent.
-- [ ] Commit only the redesign/release files and push main.
-- [ ] Publishv1.0.8 with verified APKs, confirm release assets and save release memory/checkpoint.
+- [x] Commit only the redesign/release files and push main: f941ce2dfb304047237215f24974ec26c8b0ebbb.
+- [x] Publishv1.0.8 with verified APKs, confirm release assets and save release memory/checkpoint.
 
 Release artifacts: phone109,257,532bytes, SHA2568f44714d9ea680950f5a79b40091b3adc242a1c3571278b9711e8a56ffc5cc4e; TV108,155,719bytes, SHA256798eb25ce367c5f21a4aa256a3e4962050bd1733aef34d5b40394baf40b7f45d. TV interface unchanged; no new physical TV runtime check. Local signed-package verification is retained at build/release/verification.json.
+
+Published [RadioV2 v1.0.8](https://github.com/Natboa/RadioV2-Android/releases/tag/v1.0.8) on2026-10-24. Both GitHub assets are uploaded and their SHA256 digests/sizes match local verified APKs. Release tag targets the validated source commit above. Earlier no-commit notes describe the pre-release milestones and are superseded by this explicitly authorized release.

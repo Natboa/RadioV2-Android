@@ -108,3 +108,7 @@ tools/design/final_device_check.py after repeats comparison, themes, large text,
 Build a separate candidate by setting RADIO_DESIGN_TEST=1 in that PowerShell process and running flutter build apk --profile --dart-define=RADIO_PERF=true. Ordinary builds omit both switches. Profile probes are compiled out when RADIO_PERF is absent.
 
 Evidence: build/design/; source ledger: REDESIGN_PLAN.md; implemented system: DESIGN.md; bounded review status: REDESIGN_REVIEW.md. Release status is tracked in the source ledger.
+
+## Release
+
+[RadioV2 v1.0.8](https://github.com/Natboa/RadioV2-Android/releases/tag/v1.0.8) was published on2026-10-24 from f941ce2dfb304047237215f24974ec26c8b0ebbb after explicit user authorization. Fresh60tests passed and analyzer lib/test was clean. Production phone(code10) and TV(code6) release builds succeeded. Both APKs are non-debuggable, have the expected production identities and match the previous release signing certificate. Test performance probes are absent. GitHub uploaded asset hashes and sizes match the locally verified APKs; exact hashes are in REDESIGN_PLAN.md. The TV interface is unchanged and no new physical TV runtime check was performed. This release also includes the previously pushed phone playback-stall recovery fix.
