@@ -16,14 +16,9 @@
   <img src="https://img.shields.io/badge/Also%20available%20on-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Available on Windows"/>
 </p>
 
-<table align="center">
-  <tr>
-    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05.jpg" alt="Screenshot 1" width="180"/></td>
-    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05%20(2).jpg" alt="Screenshot 2" width="180"/></td>
-    <td><img src="assets/images/screenshots/photo_2026-04-05_10-45-05%20(3).jpg" alt="Screenshot 3" width="180"/></td>
-    <td><img src="assets/images/screenshots/photo_2026-04-05_11-09-16.jpg" alt="Screenshot 4" width="180"/></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/images/screenshots/radio-banner.png" alt="RadioV2 for Android: Discover countries, station browsing, Discover genres, and Favourites displayed on four black phones against a purple studio background." width="100%"/>
+</p>
 
 <p align="center">
   <img src="assets/images/logo/android_auto.png" alt="Android Auto" width="64"/>
